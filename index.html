@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Anwar App"/>
-<meta name="description" content="Anwar App — Lecture du Coran avec Tajweed, audio, Al-Mathurat et traduction francaise"/>
+<meta name="description" content="Anwar App — Lecture du Coran avec Tajweed, Al-Mathurat et traduction francaise"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
 <title>Anwar App</title>
@@ -16,7 +16,6 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
 #root{height:100%;}
 #loader{position:fixed;inset:0;background:#F5EFE3;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;font-family:-apple-system,sans-serif;}
 #loader.out{opacity:0;pointer-events:none;}
-@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
 </style>
 </head>
 <body>
@@ -28,8 +27,8 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
     <text x="60" y="82" font-family="sans-serif" font-size="11" fill="#1B2D5A" text-anchor="middle" letter-spacing="2">ANWAR</text>
     <text x="60" y="95" font-family="sans-serif" font-size="9" fill="#9B7A50" text-anchor="middle">App</text>
   </svg>
-  <div style="font-size:10px;color:#9B7A50;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;">Al-Quraan - Lecture et Meditation</div>
-  <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden"><div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease;"></div></div>
+  <div style="font-size:10px;color:#9B7A50;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Al-Quraan - Lecture et Meditation</div>
+  <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden"><div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease"></div></div>
 </div>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -62,15 +61,20 @@ const GCSS = `
 @keyframes vcheck{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
 @keyframes slideUpM{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.tw .ham_wasl,.tw .slnt,.tw .laam_shamsiyya{color:#888!important}
-.tw .madda_necessary{color:#1D4ED8!important;font-weight:700}
+.tw{color:#1a1a1a!important}
+.tw .ham_wasl,.tw .slnt,.tw .laam_shamsiyya{color:#AAAAAA!important}
 .tw .madda_normal{color:#3B82F6!important}
-.tw .madda_obligatory{color:#1E3A8A!important;font-weight:700}
-.tw .qalaqah{color:#B45309!important}
-.tw .ikhafa{color:#6D28D9!important}
+.tw .madda_permissible{color:#2563EB!important}
+.tw .madda_obligatory{color:#1D4ED8!important;font-weight:700}
+.tw .madda_necessary{color:#1E3A8A!important;font-weight:700}
+.tw .qalaqah{color:#D97706!important}
+.tw .ghunnah{color:#DC2626!important}
+.tw .ikhafa{color:#7C3AED!important}
+.tw .ikhafa_shafawi{color:#9D174D!important}
 .tw .iqlab{color:#0E7490!important}
-.tw .idghaam_w_ghunnah{color:#059669!important}
-.tw .ghunnah{color:#15803D!important}
+.tw .idghaam_w_ghunnah{color:#16A34A!important}
+.tw .idghaam_wo_ghunnah{color:#15803D!important}
+.tw .idghaam_shafawi{color:#047857!important}
 .sr-row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(221,209,187,.55);cursor:pointer;transition:background .12s}
 .sr-row:hover{background:rgba(138,105,16,.06)}
 .vword{cursor:pointer;border-radius:3px;transition:background .12s;display:inline}
@@ -86,6 +90,23 @@ const GCSS = `
 `;
 
 /* ── AL-MA'THURÂT SUGHRA ── */
+
+/* ── TAJWEED BRACKET NOTATION PARSER ──
+   Converts [word|class:n] notation → <span class="class">word</span>
+   Used when the API returns bracket notation instead of HTML spans */
+const parseTajweedBrackets = (raw) => {
+  if (!raw) return '';
+  // Already HTML spans — return as-is
+  if (raw.includes('<span')) return raw;
+  // Convert bracket notation: [text|className:n] → <span class="className">text</span>
+  let out = raw.replace(/\[([^\|]*)\|([^:\]]+):[^\]]*\]/g, (_, txt, cls) =>
+    txt ? `<span class="${cls}">${txt}</span>` : ''
+  );
+  // Remove any remaining malformed brackets and pipes
+  out = out.replace(/\[[^\]]*\]/g,'').replace(/\|[a-z_]+:[0-9]+/g,'');
+  return out;
+};
+
 const MATH = [
   { n:1, cat:"Formule d'ouverture", reps:1,
     ar:"أَعُوذُ بِاللهِ السَّمِيعِ الْعَلِيمِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
@@ -570,13 +591,22 @@ function AnwarApp(){
     setLoading(true);setAyahs([]);setFrV([]);setTjA([]);setVi(0);setPlaying(false);setVD(new Set());setRW(new Set());
     if(aref.current)aref.current.src='';
     Promise.all([
-      fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-tajweed,fr.hamidullah`).then(r=>r.json()).catch(()=>null),
-      fetch(`https://api.alquran.cloud/v1/surah/${n}/quran-uthmani`).then(r=>r.json()).catch(()=>null),
-    ]).then(([tjRes,utRes])=>{
-      let main=[],fr=[],tj2=[];
-      if(tjRes?.code===200&&Array.isArray(tjRes.data)&&tjRes.data.length>=2){const s=tjRes.data[0]?.ayahs[0]?.text||'';if(s.includes('<span'))tj2=tjRes.data[0].ayahs;fr=tjRes.data[1]?.ayahs||[];}
-      main=utRes?.code===200?utRes.data?.ayahs||[]:tjRes?.data?.[0]?.ayahs?.map(a=>({...a,text:a.text.replace(/\[[^\]]*\]/g,'').replace(/\|/g,'').replace(/\s+/g,' ').trim()}))||[];
-      setAyahs(main);setFrV(fr);setTjA(tj2);setLoading(false);
+      // Fetch tajweed text (Arabic with coloring data)
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/quran-tajweed`).then(r=>r.json()).catch(()=>null),
+      // Fetch French translation
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/fr.hamidullah`).then(r=>r.json()).catch(()=>null),
+    ]).then(([tjRes, frRes])=>{
+      const rawTj  = tjRes?.code===200  ? tjRes.data?.ayahs  || [] : [];
+      const rawFr  = frRes?.code===200  ? frRes.data?.ayahs  || [] : [];
+      // Build base ayahs from tajweed (strip markup for numbering/tafsir)
+      const base = rawTj.map(a=>({
+        ...a,
+        textClean: a.text.replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\|/g,'').replace(/\s+/g,' ').trim()
+      }));
+      setTjA(rawTj);   // keep raw tajweed text (HTML spans OR bracket notation)
+      setFrV(rawFr);
+      setAyahs(base);  // clean text for numbering / tafsir display
+      setLoading(false);
     });
     if(!allFr&&!allFrL){setAllFrL(true);fetch('https://api.alquran.cloud/v1/quran/fr.hamidullah').then(r=>r.json()).then(({code,data})=>{if(code===200&&data?.surahs){const all=[];data.surahs.forEach(s=>s.ayahs.forEach(a=>all.push({...a,surah:s.number})));setAllFr(all);}setAllFrL(false);}).catch(()=>setAllFrL(false));}
   },[allFr,allFrL]);
@@ -605,14 +635,32 @@ function AnwarApp(){
 
   const curS=SD.find(x=>x[0]===sn);
   const vdj=VDJ[new Date().getDate()%VDJ.length];
-  const hasTj=tjA.length>0;
+  const hasTj=tjA.length>0; // tajweed always active when data available
 
   const renderAra=(idx,fontSize,extra={})=>{
     const ay=ayahs[idx];if(!ay)return null;
     const tjAy=tjA[idx];const ac=idx===vi;
-    if(hasTj&&tj&&tjAy?.text?.includes('<span'))return <div className="tw" dir="rtl" dangerouslySetInnerHTML={{__html:tjAy.text}} style={{fontFamily:ARA,fontSize,lineHeight:2.15,color:C.blue,textAlign:'right',...extra}}/>;
-    return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.15,color:C.blue,textAlign:'right',...extra}}>
-      {(ay.text||'').split(' ').filter(Boolean).map((w,i)=>{const hidden=hz&&!ac&&!rw.has(w);return<span key={i} className="vword" style={{filter:hidden?'blur(5px)':undefined}} onClick={e=>{e.stopPropagation();if(hz)setRW(p=>new Set([...p,w]));else setWp({word:w});}}>{w} </span>;})}
+    // Always try to render tajweed coloring
+    if(tj&&tjAy?.text){
+      const html=parseTajweedBrackets(tjAy.text);
+      if(html){
+        // Hifz mode: blur the whole verse
+        const blurStyle=hz&&!ac?{filter:'blur(6px)',cursor:'pointer',userSelect:'none'}:{};
+        return <div className="tw" dir="rtl"
+          dangerouslySetInnerHTML={{__html:html}}
+          onClick={hz&&!ac?e=>{e.stopPropagation();setRW(p=>new Set([...p,idx]));}:undefined}
+          style={{fontFamily:ARA,fontSize,lineHeight:2.3,color:'#1a1a1a',textAlign:'right',...blurStyle,...extra}}/>;
+      }
+    }
+    // Fallback: plain uthmani word-by-word (when tajweed API fails)
+    const plainText=(ay.textClean||ay.text||'');
+    return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.3,color:'#1a1a1a',textAlign:'right',...extra}}>
+      {plainText.split(' ').filter(Boolean).map((w,i)=>{
+        const hidden=hz&&!ac&&!rw.has(w);
+        return<span key={i} className="vword" style={{filter:hidden?'blur(5px)':undefined}}
+          onClick={e=>{e.stopPropagation();if(hz)setRW(p=>new Set([...p,w]));else setWp({word:w});}}
+        >{w} </span>;
+      })}
     </div>);
   };
 
@@ -633,7 +681,7 @@ function AnwarApp(){
   const renderCards=()=>(
     <div style={{padding:'8px 0'}}>
       {hz&&<div style={{margin:'8px 10px 2px',padding:'9px 13px',background:'#FFF8E8',border:`1px solid ${C.gb}`,borderRadius:8,fontSize:12,color:C.bm}}>🎓 Mode mémorisation — tapez sur un mot pour révéler</div>}
-      {hasTj&&tj&&<div style={{margin:'6px 10px 2px',padding:'7px 12px',background:'#EFF6FF',border:'1px solid rgba(59,130,246,.2)',borderRadius:8,fontSize:11,color:'#1D4ED8'}}>🎨 Tajweed coloré actif</div>}
+      {hasTj&&tj&&<div style={{margin:'6px 10px 2px',padding:'7px 12px',background:'#EFF6FF',border:'1px solid rgba(59,130,246,.2)',borderRadius:8,fontSize:11,color:'#1D4ED8'}}>🎨 Coloration Tajweed — chaque couleur représente une règle de récitation</div>}
       {sn!==9&&<div style={{textAlign:'center',padding:16,fontFamily:ARA,fontSize:fs,color:C.blue,direction:'rtl',lineHeight:2}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>}
       {ayahs.map((ay,idx)=>{
         const fr=frV[idx];const ac=idx===vi;const bkd=bk.some(b=>b.key===`${sn}:${idx+1}`);const done=vd.has(idx);
@@ -739,7 +787,7 @@ function AnwarApp(){
                 <Btn onClick={()=>setTaf(null)} style={{fontSize:20,color:C.bl}}>✕</Btn>
               </div>
             </div>
-            {ayahs[taf.idx]&&<div dir="rtl" style={{padding:'12px 16px',fontFamily:ARA,fontSize:22,color:C.blue,textAlign:'right',lineHeight:1.9,background:'#F8F3E8',borderBottom:`1px solid ${C.border}`,flexShrink:0}}>{ayahs[taf.idx].text}</div>}
+            {ayahs[taf.idx]&&<div dir="rtl" style={{padding:'12px 16px',fontFamily:ARA,fontSize:22,color:'#1a1a1a',textAlign:'right',lineHeight:1.9,background:'#F8F3E8',borderBottom:`1px solid ${C.border}`,flexShrink:0}}>{ayahs[taf.idx].textClean||ayahs[taf.idx].text}</div>}
             {frV[taf.idx]&&<div style={{padding:'10px 16px',fontSize:13,color:C.bm,fontStyle:'italic',lineHeight:1.7,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>{frV[taf.idx].text}</div>}
             <div style={{padding:'14px 16px',overflowY:'auto',flex:1,fontSize:13.5,lineHeight:1.9,color:C.brown}}>
               {taf.loading?<div style={{textAlign:'center',padding:24}}><div style={{width:24,height:24,border:`2px solid ${C.border}`,borderTop:`2px solid ${C.gold}`,borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 10px'}}/></div>
@@ -858,13 +906,11 @@ function AnwarApp(){
 const container = document.getElementById('root');
 const reactRoot = ReactDOM.createRoot(container);
 reactRoot.render(React.createElement(AnwarApp));
-requestAnimationFrame(() => { const f=document.getElementById('spf'); if(f)f.style.width='100%'; });
-setTimeout(() => { const l=document.getElementById('loader'); if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);} }, 2200);
+requestAnimationFrame(()=>{const f=document.getElementById('spf');if(f)f.style.width='100%';});
+setTimeout(()=>{const l=document.getElementById('loader');if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);}},2200);
 </script>
 <script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-}
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 </script>
 </body>
 </html>
