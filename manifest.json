@@ -1,25 +1,18 @@
 {
-  "name": "Al-Qurʾân — Le Noble Coran",
-  "short_name": "Al-Qurʾân",
-  "description": "Lecture du Coran avec Tajweed coloré, audio, Tafsir et traduction française — PWA hors-ligne",
+  "name": "Anwar App — Al-Qurʾân",
+  "short_name": "Anwar App",
+  "description": "Lecture du Coran avec Tajweed, audio, Al-Ma'thurât et traduction française",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F5EFE3",
   "theme_color": "#F5EFE3",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "lang": "fr",
-  "categories": ["education", "lifestyle"],
   "icons": [
     { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ],
-  "shortcuts": [
-    { "name": "Al-Fatihah",  "url": "./index.html?s=1",   "icons": [{"src":"icons/icon-96.png","sizes":"96x96"}] },
-    { "name": "Al-Kahf",     "url": "./index.html?s=18",  "icons": [{"src":"icons/icon-96.png","sizes":"96x96"}] },
-    { "name": "Al-Mulk",     "url": "./index.html?s=67",  "icons": [{"src":"icons/icon-96.png","sizes":"96x96"}] },
-    { "name": "Al-Ikhlas",   "url": "./index.html?s=112", "icons": [{"src":"icons/icon-96.png","sizes":"96x96"}] }
   ]
 }
