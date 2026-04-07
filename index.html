@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Anwar App"/>
-<meta name="description" content="Anwar App — Lecture du Coran avec Tajweed, Al-Mathurat et traduction francaise"/>
+<meta name="description" content="Anwar App — Éclaire ton quotidien · Coran Tajweed FR"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
 <title>Anwar App</title>
@@ -20,15 +20,18 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
 </head>
 <body>
 <div id="loader">
-  <svg width="120" height="120" viewBox="0 0 120 120" style="margin-bottom:20px">
+  <svg width="118" height="118" viewBox="0 0 120 120" style="margin-bottom:18px">
     <circle cx="60" cy="60" r="56" fill="white" stroke="#1B2D5A" stroke-width="3"/>
     <circle cx="60" cy="60" r="50" fill="none" stroke="#1B2D5A" stroke-width=".8" opacity=".35"/>
-    <text x="60" y="58" font-family="serif" font-size="34" fill="#1B2D5A" text-anchor="middle" dominant-baseline="middle">&#x623;&#x646;&#x648;&#x631;</text>
+    <text x="60" y="56" font-family="serif" font-size="34" fill="#1B2D5A" text-anchor="middle" dominant-baseline="middle">&#x623;&#x646;&#x648;&#x631;</text>
     <text x="60" y="82" font-family="sans-serif" font-size="11" fill="#1B2D5A" text-anchor="middle" letter-spacing="2">ANWAR</text>
-    <text x="60" y="95" font-family="sans-serif" font-size="9" fill="#9B7A50" text-anchor="middle">App</text>
+    <text x="60" y="96" font-family="sans-serif" font-size="9" fill="#9B7A50" text-anchor="middle">App</text>
   </svg>
-  <div style="font-size:10px;color:#9B7A50;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Al-Quraan - Lecture et Meditation</div>
-  <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden"><div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease"></div></div>
+  <div style="font-size:12px;color:#3A2008;font-weight:600;margin-bottom:3px">Anwar App</div>
+  <div style="font-size:10px;color:#9B7A50;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:26px">Éclaire ton quotidien</div>
+  <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden">
+    <div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease"></div>
+  </div>
 </div>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -91,21 +94,38 @@ const GCSS = `
 
 /* ── AL-MA'THURÂT SUGHRA ── */
 
-/* ── TAJWEED BRACKET NOTATION PARSER ──
-   Converts [word|class:n] notation → <span class="class">word</span>
-   Used when the API returns bracket notation instead of HTML spans */
-const parseTajweedBrackets = (raw) => {
-  if (!raw) return '';
-  // Already HTML spans — return as-is
-  if (raw.includes('<span')) return raw;
-  // Convert bracket notation: [text|className:n] → <span class="className">text</span>
-  let out = raw.replace(/\[([^\|]*)\|([^:\]]+):[^\]]*\]/g, (_, txt, cls) =>
-    txt ? `<span class="${cls}">${txt}</span>` : ''
-  );
-  // Remove any remaining malformed brackets and pipes
-  out = out.replace(/\[[^\]]*\]/g,'').replace(/\|[a-z_]+:[0-9]+/g,'');
+// ── TAJWEED : couleurs inline garanties (pas de dépendance CSS) ──
+const TC={
+  ham_wasl:'#AAAAAA',slnt:'#AAAAAA',laam_shamsiyya:'#AAAAAA',
+  madda_normal:'#3B82F6',madda_permissible:'#2563EB',
+  madda_obligatory:'#1D4ED8',madda_necessary:'#1E3A8A',
+  qalaqah:'#D97706',ghunnah:'#DC2626',
+  ikhafa:'#7C3AED',ikhafa_shafawi:'#9D174D',iqlab:'#0E7490',
+  idghaam_w_ghunnah:'#16A34A',idghaam_wo_ghunnah:'#15803D',idghaam_shafawi:'#047857',
+};
+
+const parseTajweedBrackets=(raw)=>{
+  if(!raw)return'';
+  let out=raw;
+  if(out.includes('<span')){
+    // Ajouter style inline color à chaque span
+    out=out.replace(/<span\s+class=['"]([^'"]+)['"]/g,(_,cls)=>{
+      const col=TC[cls.trim()];
+      return col?`<span class="${cls}" style="color:${col}"`:`<span class="${cls}"`;
+    });
+    return out;
+  }
+  // Notation crochets [texte|classe:n] → span coloré inline
+  out=out.replace(/\[([^\|]*)\|([^:\]]+):[^\]]*\]/g,(_,txt,cls)=>{
+    if(!txt)return'';
+    const col=TC[cls.trim()]||'#111111';
+    return`<span style="color:${col}">${txt}</span>`;
+  });
+  // Nettoyer résidus
+  out=out.replace(/\[[^\]]*\]/g,'').replace(/\|[a-z_]+:[0-9]+/g,'');
   return out;
 };
+
 
 const MATH = [
   { n:1, cat:"Formule d'ouverture", reps:1,
@@ -477,7 +497,7 @@ const DhikrTab=({dc,setDc})=>{
                 <div style={{fontSize:24,fontWeight:700,color:col,marginBottom:8}}>{dc[i]}<span style={{fontSize:12,color:C.bl,fontWeight:400}}>/{t}</span></div>
                 <div style={{display:'flex',gap:5,justifyContent:'center'}}>
                   <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=Math.max(0,n[i]-1);return n;})} style={{width:30,height:30,border:`1px solid ${C.border}`,borderRadius:'50%',background:'none',fontSize:16,color:C.bl,cursor:'pointer'}}>−</button>
-                  <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=Math.min(n[i]+1,t);return n;})} style={{width:30,height:30,background:col,border:'none',borderRadius:'50%',fontSize:16,color:'white',fontWeight:700,cursor:'pointer'}}>+</button>
+                  <button onClick={()=>{setDc(prev=>{const n=[...prev];n[i]=Math.min(n[i]+1,t);return n;});try{navigator.vibrate&&navigator.vibrate(35);}catch{}}} style={{width:30,height:30,background:col,border:'none',borderRadius:'50%',fontSize:16,color:'white',fontWeight:700,cursor:'pointer'}}>+</button>
                   <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=0;return n;})} style={{width:30,height:30,border:`1px solid ${C.border}`,borderRadius:'50%',background:'none',fontSize:11,color:C.bl,cursor:'pointer'}}>↺</button>
                 </div>
                 {dc[i]>=t&&<div style={{fontSize:11,color:C.green,marginTop:5,fontWeight:700}}>✓ Complété !</div>}
@@ -640,26 +660,26 @@ function AnwarApp(){
   const renderAra=(idx,fontSize,extra={})=>{
     const ay=ayahs[idx];if(!ay)return null;
     const tjAy=tjA[idx];const ac=idx===vi;
-    // Always try to render tajweed coloring
     if(tj&&tjAy?.text){
       const html=parseTajweedBrackets(tjAy.text);
       if(html){
-        // Hifz mode: blur the whole verse
         const blurStyle=hz&&!ac?{filter:'blur(6px)',cursor:'pointer',userSelect:'none'}:{};
-        return <div className="tw" dir="rtl"
+        return <div dir="rtl"
           dangerouslySetInnerHTML={{__html:html}}
           onClick={hz&&!ac?e=>{e.stopPropagation();setRW(p=>new Set([...p,idx]));}:undefined}
-          style={{fontFamily:ARA,fontSize,lineHeight:2.3,color:'#1a1a1a',textAlign:'right',...blurStyle,...extra}}/>;
+          style={{fontFamily:ARA,fontSize,lineHeight:2.35,color:'#111111',textAlign:'right',...blurStyle,...extra}}/>;
       }
     }
-    // Fallback: plain uthmani word-by-word (when tajweed API fails)
-    const plainText=(ay.textClean||ay.text||'');
-    return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.3,color:'#1a1a1a',textAlign:'right',...extra}}>
+    // Fallback propre (si API indisponible)
+    const plainText=ay.textClean||
+      (ay.text||'').replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\s+/g,' ').trim();
+    return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.35,color:'#111111',textAlign:'right',...extra}}>
       {plainText.split(' ').filter(Boolean).map((w,i)=>{
         const hidden=hz&&!ac&&!rw.has(w);
         return<span key={i} className="vword" style={{filter:hidden?'blur(5px)':undefined}}
-          onClick={e=>{e.stopPropagation();if(hz)setRW(p=>new Set([...p,w]));else setWp({word:w});}}
-        >{w} </span>;
+          onClick={e=>{e.stopPropagation();if(hz)setRW(p=>new Set([...p,w]));else setWp({word:w});}}>
+          {w}{' '}
+        </span>;
       })}
     </div>);
   };
@@ -667,8 +687,36 @@ function AnwarApp(){
   const renderPageMode=()=>(
     <div style={{padding:'20px 18px',background:'#FAF6EC',minHeight:'100%'}}>
       {sn!==9&&<div style={{textAlign:'center',fontFamily:ARA,fontSize:fs+6,color:C.blue,direction:'rtl',lineHeight:2.2,marginBottom:18,padding:14,borderTop:`2px solid ${C.gold}`,borderBottom:`2px solid ${C.gold}`}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>}
-      <div dir="rtl" style={{fontFamily:ARA,fontSize:fs+4,color:C.blue,textAlign:'justify',lineHeight:2.6,wordSpacing:4}}>
-        {ayahs.map((ay,idx)=>{const tjAy=tjA[idx];const numS=<span key={`n${idx}`} onClick={()=>playAt(idx)} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:28,height:28,borderRadius:'50%',background:C.gold,color:'white',fontSize:10,fontWeight:700,fontFamily:UI,verticalAlign:'middle',margin:'0 4px',cursor:'pointer'}}>{ay.numberInSurah}</span>;if(hasTj&&tj&&tjAy?.text?.includes('<span'))return<span key={idx}><span className="tw" dangerouslySetInnerHTML={{__html:tjAy.text}}/>{numS}</span>;return<span key={idx}>{ay.text} {numS}</span>;})}
+      <div dir="rtl" style={{fontFamily:ARA,fontSize:fs+4,color:'#111111',textAlign:'justify',lineHeight:2.6,wordSpacing:4}}>
+        {ayahs.map((ay,idx)=>{
+          const tjAy=tjA[idx];
+          const numBtn=(
+            <span key={`n${idx}`} onClick={()=>playAt(idx)}
+              style={{display:'inline-flex',alignItems:'center',justifyContent:'center',
+                width:26,height:26,borderRadius:'50%',background:C.gold,color:'white',
+                fontSize:9,fontWeight:700,fontFamily:UI,verticalAlign:'middle',
+                margin:'0 3px',cursor:'pointer',flexShrink:0}}>
+              {ay.numberInSurah}
+            </span>
+          );
+          if(tj&&tjAy?.text){
+            const h=parseTajweedBrackets(tjAy.text);
+            if(h)return(
+              <React.Fragment key={idx}>
+                <span dangerouslySetInnerHTML={{__html:h}}/>
+                {numBtn}{' '}
+              </React.Fragment>
+            );
+          }
+          // Fallback : texte propre sans balises HTML
+          const clean=ay.textClean||
+            (ay.text||'').replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\s+/g,' ').trim();
+          return(
+            <React.Fragment key={idx}>
+              <span>{clean}</span>{numBtn}{' '}
+            </React.Fragment>
+          );
+        })}
       </div>
       {!ao&&showFr&&frV.length>0&&<div style={{marginTop:28,borderTop:`2px solid ${C.border}`,paddingTop:18}}><div style={{fontSize:10,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12,textAlign:'center',fontWeight:700}}>Traduction — {curS?.[1]||''}</div>{frV.map((v,i)=><p key={i} style={{fontSize:14,color:C.bm,lineHeight:1.85,marginBottom:10,fontStyle:'italic'}}><span style={{fontSize:11,color:C.bl,fontWeight:700,marginRight:4}}>[{i+1}]</span>{v.text}</p>)}</div>}
       <div style={{padding:14,display:'flex',gap:10,justifyContent:'center'}}>
@@ -808,7 +856,7 @@ function AnwarApp(){
           <AnwarLogo size={38}/>
           <div>
             {tab==='quran'&&ayahs.length?<><div style={{fontSize:16,fontWeight:700,color:C.brown}}>{curS?.[1]} <span style={{fontWeight:400,fontSize:13,color:C.bl}}>({curS?.[2]})</span></div><div style={{fontSize:10,color:C.bl,letterSpacing:1,textTransform:'uppercase',marginTop:1}}>{curS?.[4]==='M'?'Mecquoise 🕋':'Médinoise 🕌'} · {curS?.[3]}v</div></>
-            :<><div style={{fontSize:16,fontWeight:700,color:C.blue}}>Anwar App</div><div style={{fontSize:10,color:C.bl,letterSpacing:1.2,textTransform:'uppercase',marginTop:1}}>Al-Qurʾân · Lecture & Méditation</div></>}
+            :<><div style={{fontSize:16,fontWeight:700,color:C.blue}}>Anwar App</div><div style={{fontSize:10,color:C.bl,letterSpacing:1.2,textTransform:'uppercase',marginTop:1}}>Éclaire ton quotidien</div></>}
           </div>
         </div>
         <Btn onClick={()=>setSett(v=>!v)} style={{border:`1px solid ${C.border}`,borderRadius:8,padding:'7px 8px',fontSize:13}}>⚙️</Btn>
@@ -820,8 +868,9 @@ function AnwarApp(){
           <div style={{padding:'14px 14px 16px'}}>
             <div style={{background:'linear-gradient(135deg,#2A1F0A,#1B2D5A)',borderRadius:16,padding:'16px 18px',marginBottom:12,position:'relative',overflow:'hidden'}}>
               <div style={{position:'absolute',inset:0,opacity:.05,backgroundImage:'repeating-linear-gradient(60deg,#c9a84c 0,#c9a84c 1px,transparent 0,transparent 20px)',backgroundSize:'20px 20px'}}/>
-              <div style={{fontSize:21,fontWeight:700,color:'#F5EFE3',marginBottom:2}}>Anwar App</div>
-              <div style={{fontSize:10,color:'rgba(201,168,76,.8)'}}>{new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+              <div style={{fontSize:21,fontWeight:700,color:'#F5EFE3',marginBottom:4,textAlign:'center'}}>Anwar App</div>
+              <div style={{fontSize:10,color:'rgba(201,168,76,.8)',textAlign:'center'}}>{new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+              <div style={{fontSize:11,color:'rgba(201,168,76,.6)',textAlign:'center',marginTop:3,letterSpacing:1.5,textTransform:'uppercase'}}>Éclaire ton quotidien</div>
             </div>
             <div style={{background:C.bg2,border:`1.5px solid ${C.gb}`,borderLeft:`4px solid ${C.gold}`,borderRadius:14,padding:16,marginBottom:12}}>
               <div style={{fontSize:10,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',fontWeight:700,marginBottom:10}}>✨ Verset du jour</div>
@@ -910,7 +959,9 @@ requestAnimationFrame(()=>{const f=document.getElementById('spf');if(f)f.style.w
 setTimeout(()=>{const l=document.getElementById('loader');if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);}},2200);
 </script>
 <script>
-if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
-  "name": "Anwar App — Al-Quraan",
+  "name": "Anwar App",
   "short_name": "Anwar App",
-  "description": "Lecture du Coran avec Tajweed colore, Al-Mathurat et traduction francaise",
+  "description": "Éclaire ton quotidien · Coran avec Tajweed coloré, Al-Mathurat et traduction FR",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F5EFE3",
