@@ -4,258 +4,199 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="theme-color" content="#F5EFE3"/>
-<meta name="description" content="Al-Qurʾân — Lecture du Coran avec Tajweed, audio, Tafsir et traduction française"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Al-Qurʾân"/>
+<meta name="apple-mobile-web-app-title" content="Anwar App"/>
+<meta name="description" content="Anwar App — Lecture du Coran avec Tajweed, audio, Al-Mathurat et traduction francaise"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-<title>Al-Qurʾân — Le Noble Coran</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;700&display=swap" rel="stylesheet"/>
+<title>Anwar App</title>
 <style>
-:root{
-  --bg:#F5EFE3;--bg2:#FDFAF4;--side:#EDE6D5;
-  --gold:#8A6910;--gold2:#B8932C;--gf:rgba(138,105,16,.09);--gb:rgba(138,105,16,.22);
-  --blue:#1B2D5A;--brown:#3A2008;--bm:#6B4A25;--bl:#9B7A50;
-  --border:#DDD1BB;--bstr:#C4B49A;--shadow:rgba(58,32,8,.09);--green:#15803D;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);overflow:hidden;-webkit-font-smoothing:antialiased}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-#root{height:100%;display:flex;flex-direction:column}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--gb);border-radius:2px}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
+#root{height:100%;}
+#loader{position:fixed;inset:0;background:#F5EFE3;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;font-family:-apple-system,sans-serif;}
+#loader.out{opacity:0;pointer-events:none;}
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap');
+</style>
+</head>
+<body>
+<div id="loader">
+  <svg width="120" height="120" viewBox="0 0 120 120" style="margin-bottom:20px">
+    <circle cx="60" cy="60" r="56" fill="white" stroke="#1B2D5A" stroke-width="3"/>
+    <circle cx="60" cy="60" r="50" fill="none" stroke="#1B2D5A" stroke-width=".8" opacity=".35"/>
+    <text x="60" y="58" font-family="serif" font-size="34" fill="#1B2D5A" text-anchor="middle" dominant-baseline="middle">&#x623;&#x646;&#x648;&#x631;</text>
+    <text x="60" y="82" font-family="sans-serif" font-size="11" fill="#1B2D5A" text-anchor="middle" letter-spacing="2">ANWAR</text>
+    <text x="60" y="95" font-family="sans-serif" font-size="9" fill="#9B7A50" text-anchor="middle">App</text>
+  </svg>
+  <div style="font-size:10px;color:#9B7A50;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;">Al-Quraan - Lecture et Meditation</div>
+  <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden"><div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease;"></div></div>
+</div>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
 
+const C = {
+  bg:"#F5EFE3", bg2:"#FDFAF4", side:"#EDE6D5",
+  gold:"#8A6910", gf:"rgba(138,105,16,.09)", gb:"rgba(138,105,16,.22)",
+  blue:"#1B2D5A", brown:"#3A2008", bm:"#6B4A25", bl:"#9B7A50",
+  border:"#DDD1BB", bstr:"#C4B49A", shadow:"rgba(58,32,8,.09)", green:"#15803D",
+};
+const ARA = "'Scheherazade New', serif";
+const UI  = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+const GCSS = `
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:rgba(138,105,16,.22);border-radius:2px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes bar1{0%,100%{height:5px}50%{height:17px}}
 @keyframes bar2{0%,100%{height:9px}50%{height:21px}}
 @keyframes bar3{0%,100%{height:4px}50%{height:13px}}
 @keyframes bar4{0%,100%{height:13px}50%{height:7px}}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(138,105,16,.3)}70%{box-shadow:0 0 0 10px rgba(138,105,16,0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(138,105,16,.3)}70%{box-shadow:0 0 0 8px rgba(138,105,16,0)}}
 @keyframes vcheck{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes obFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* Tajweed colours (light theme) */
-.tw .ham_wasl,.tw .slnt,.tw .laam_shamsiyya{color:#A0A0A0!important}
+@keyframes slideUpM{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.tw .ham_wasl,.tw .slnt,.tw .laam_shamsiyya{color:#888!important}
 .tw .madda_necessary{color:#1D4ED8!important;font-weight:700}
-.tw .madda_permissible{color:#2563EB!important}
 .tw .madda_normal{color:#3B82F6!important}
 .tw .madda_obligatory{color:#1E3A8A!important;font-weight:700}
 .tw .qalaqah{color:#B45309!important}
-.tw .ikhafa_shafawi{color:#9D174D!important}
 .tw .ikhafa{color:#6D28D9!important}
 .tw .iqlab{color:#0E7490!important}
-.tw .idghaam_shafawi{color:#047857!important}
-.tw .idghaam_wo_ghunnah{color:#065F46!important}
 .tw .idghaam_w_ghunnah{color:#059669!important}
 .tw .ghunnah{color:#15803D!important}
+.sr-row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(221,209,187,.55);cursor:pointer;transition:background .12s}
+.sr-row:hover{background:rgba(138,105,16,.06)}
+.vword{cursor:pointer;border-radius:3px;transition:background .12s;display:inline}
+.vword:hover{background:rgba(138,105,16,.14)}
+.tab-btn{flex:1;background:none;border:none;padding:10px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .15s;cursor:pointer}
+.tab-btn.active{color:#8A6910;border-top:3px solid #8A6910}
+.tab-btn.inactive{color:#9B7A50;border-top:3px solid transparent}
+.dsub{flex:1;padding:9px 4px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;border-bottom:2.5px solid transparent;font-family:inherit}
+.dsub.on{color:#8A6910;border-bottom-color:#8A6910;background:rgba(138,105,16,.06)}
+.dsub.off{color:#9B7A50}
+.mc{background:#FDFAF4;border:1px solid #DDD1BB;border-radius:14px;margin-bottom:10px;overflow:hidden;transition:box-shadow .2s}
+.mc:hover{box-shadow:0 2px 12px rgba(138,105,16,.14)}
+`;
 
-/* Transitions */
-#content{transition:opacity .17s ease,transform .17s ease}
-#content.fading{opacity:0;transform:translateY(5px)}
+/* ── AL-MA'THURÂT SUGHRA ── */
+const MATH = [
+  { n:1, cat:"Formule d'ouverture", reps:1,
+    ar:"أَعُوذُ بِاللهِ السَّمِيعِ الْعَلِيمِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+    ph:"A'ûdhu billâhi-s-Samî'il-'Alîmi minash-shaytânir-rajîm",
+    fr:"Je cherche refuge auprès d'Allah, l'Omni-Entendant, l'Omni-Sachant, contre le Satan maudit." },
+  { n:2, cat:"Al-Fâtiha", reps:1,
+    ar:"بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+    ph:"Bismillâhir-rahmânir-rahîm. Al-hamdu lillâhi rabbil-'âlamîn. Ar-rahmânir-rahîm. Mâliki yawmid-dîn. Iyyâka na'budu wa iyyâka nasta'în. Ihdinash-shirâtal-mustaqîm. Shirâtal-ladhîna an'amta 'alayhim ghayril-maghdûbi 'alayhim walad-dâllîn.",
+    fr:"Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux. Louange à Allah, Seigneur des mondes. Le Tout Miséricordieux, le Très Miséricordieux. Maître du Jour du Jugement. C'est Toi seul que nous adorons, et c'est Toi seul dont nous implorons l'aide. Guide-nous dans le droit chemin. Le chemin de ceux que Tu as comblés de bienfaits, non pas de ceux qui ont encouru Ta colère, ni des égarés." },
+  { n:3, cat:"Al-Baqarah 1–5", reps:1,
+    ar:"الم ﴿١﴾ ذَٰلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِّلْمُتَّقِينَ ﴿٢﴾ الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ وَمِمَّا رَزَقْنَاهُمْ يُنفِقُونَ ﴿٣﴾ وَالَّذِينَ يُؤْمِنُونَ بِمَا أُنزِلَ إِلَيْكَ وَمَا أُنزِلَ مِن قَبْلِكَ وَبِالْآخِرَةِ هُمْ يُوقِنُونَ ﴿٤﴾ أُولَٰئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ وَأُولَٰئِكَ هُمُ الْمُفْلِحُونَ ﴿٥﴾",
+    ph:"Alif-Lâm-Mîm. Dhâlikal-kitâbu lâ rayba fîhi hudal-lil muttaqîn. Alladhîna yu'minûna bil-ghaybi wa yuqîmûnas-salâta wa mimmâ razaqnâhum yunfiqûn...",
+    fr:"Alif-Lâm-Mîm. C'est le Livre, sans aucun doute, un guide pour les pieux. Ceux qui croient en l'invisible, accomplissent la prière et dépensent de ce que Nous leur avons accordé. Et qui croient en ce qu'on t'a révélé et en ce qu'on a révélé avant toi, et qui sont convaincus de l'au-delà. Ceux-là sont sur le bon chemin de leur Seigneur et ce sont eux les bienheureux." },
+  { n:4, cat:"Âyat al-Kursî (Al-Baqarah 255)", reps:1,
+    ar:"اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+    ph:"Allâhu lâ ilâha illâ huwal-hayyul-qayyûm. Lâ ta'khudhuhû sinatun wa lâ nawm. Lahû mâ fis-samâwâti wa mâ fil-ard. Man dhal-ladhî yashfa'u 'indahû illâ bi-idhnih...",
+    fr:"Allah ! Point de divinité à part Lui, le Vivant, Celui qui subsiste par lui-même. Ni somnolence ni sommeil ne Le saisissent. À Lui appartient tout ce qui est dans les cieux et sur la terre. Qui peut intercéder auprès de Lui sans Sa permission ? Il connaît leur passé et leur futur. Son Trône s'étend sur les cieux et la terre dont la garde ne Lui coûte aucune peine. Et Il est le Très Haut, le Très Grand." },
+  { n:5, cat:"Al-Baqarah 284–286", reps:1,
+    ar:"لِّلَّهِ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ ... لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+    ph:"Lillâhi mâ fis-samâwâti wa mâ fil-ard... Lâ yukallifullâhu nafsan illâ wus'ahâ. Rabbanâ lâ tu'âkhidhnâ in nasînâ aw akhta'nâ...",
+    fr:"À Allah appartient tout ce qui est dans les cieux et sur la terre... Allah n'impose à personne une charge supérieure à sa capacité. Notre Seigneur, ne nous châtie pas si nous oublions ou si nous commettons des erreurs. Notre Seigneur, ne nous charge pas de ce que nous n'avons pas la force de porter. Efface nos fautes, pardonne-nous et fais-nous miséricorde. Tu es notre Maître, accorde-nous la victoire sur les gens mécréants." },
+  { n:6, cat:"Al-Ikhlâs", reps:3,
+    ar:"قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ﴿٤﴾",
+    ph:"Qul huwallâhu ahad. Allâhus-samad. Lam yalid wa lam yûlad. Wa lam yakul-lahû kufuwan ahad.",
+    fr:"Dis : « Il est Allah, Unique. Allah, le Tout-Parfait. Il n'a pas engendré, n'a pas été engendré. Et nul ne Lui est comparable. »" },
+  { n:7, cat:"Al-Falaq", reps:3,
+    ar:"قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ﴿١﴾ مِن شَرِّ مَا خَلَقَ ﴿٢﴾ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ﴿٣﴾ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ﴿٤﴾ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ﴿٥﴾",
+    ph:"Qul a'ûdhu bi-rabbil-falaq. Min sharri mâ khalaq. Wa min sharri ghâsiqin idhâ waqab. Wa min sharrin-naffâthâti fil-'uqad. Wa min sharri hâsidin idhâ hasad.",
+    fr:"Dis : « Je cherche refuge auprès du Seigneur de l'aube naissante. Contre le mal de ce qu'Il a créé. Contre le mal de la nuit sombre quand elle s'étend. Contre le mal de celles qui soufflent sur les nœuds. Contre le mal de l'envieux quand il envie. »" },
+  { n:8, cat:"An-Nâs", reps:3,
+    ar:"قُلْ أَعُوذُ بِرَبِّ النَّاسِ ﴿١﴾ مَلِكِ النَّاسِ ﴿٢﴾ إِلَٰهِ النَّاسِ ﴿٣﴾ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ﴿٤﴾ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ﴿٥﴾ مِنَ الْجِنَّةِ وَالنَّاسِ ﴿٦﴾",
+    ph:"Qul a'ûdhu bi-rabbin-nâs. Malikin-nâs. Ilâhin-nâs. Min sharril-waswâsil-khannâs. Alladhî yuwaswisu fî sudûrin-nâs. Minal-jinnati wan-nâs.",
+    fr:"Dis : « Je cherche refuge auprès du Seigneur des hommes. Le Roi des hommes. Le Dieu des hommes. Contre le mal du tentateur qui se retire. Qui souffle le mal dans les poitrines des hommes. Qu'il soit d'entre les djinns ou d'entre les hommes. »" },
+  { n:9, cat:"Dhikr du matin", reps:3,
+    ar:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا شَرِيكَ لَهُ، لَا إِلَٰهَ إِلَّا هُوَ وَإِلَيْهِ النُّشُورُ",
+    ph:"Asbahna wa asbahal-mulku lillâh, wal-hamdu lillâh, lâ sharîka lah, lâ ilâha illâ huwa wa ilayhin-nushûr.",
+    fr:"Nous avons accueilli le matin, et le matin appartient au royaume d'Allah. Louange à Allah, sans associé. Pas de divinité sauf Lui et c'est vers Lui le Retour." },
+  { n:10, cat:"Dhikr de la fitrah", reps:3,
+    ar:"أَصْبَحْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَكَلِمَةِ الْإِخْلَاصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ حَنِيفًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ",
+    ph:"Asbahna 'alâ fitratal-islâm, wa kalimatil-ikhlâs, wa 'alâ dîni nabiyyinâ muhammadin sallallâhu 'alayhi wa sallam, wa 'alâ millati abînâ ibrâhîma hanîfan.",
+    fr:"Nous avons accueilli le matin sur la nature primordiale de l'Islam, sur la parole du monothéisme sincère, sur la religion de notre Prophète Muhammad ﷺ et sur la religion de notre père Ibrahim, le pur monothéiste." },
+  { n:11, cat:"Demande de protection", reps:3,
+    ar:"اللَّهُمَّ إِنِّي أَصْبَحْتُ مِنْكَ فِي نِعْمَةٍ وَعَافِيَةٍ وَسِتْرٍ، فَأَتِمَّ عَلَيَّ نِعْمَتَكَ وَعَافِيَتَكَ وَسِتْرَكَ فِي الدُّنْيَا وَالْآخِرَةِ",
+    ph:"Allâhumma innî asbahtu minka fî ni'matin wa 'âfiyatin wa sitr. Fa-atimma 'alayya ni'mataka wa 'âfiyataka wa sitrak fid-dunyâ wal-âkhirah.",
+    fr:"Ô Allah ! Je suis entré dans le matin bénéficiant de Toi d'une grâce, d'une bonne santé et d'un voile. Complète donc sur moi Ta grâce, Ta bonne santé et Ton voile dans cette vie et dans l'au-delà." },
+  { n:12, cat:"Gratitude", reps:3,
+    ar:"اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
+    ph:"Allâhumma mâ asbaha bî min ni'matin aw bi-ahadin min khalqika faminka wahdaka lâ sharîka lak, falakal-hamdu wa lakash-shukr.",
+    fr:"Ô Allah ! Toute grâce dont je bénéficie au matin ou dont bénéficie l'une de Tes créatures vient de Toi seul, sans associé. À Toi la louange et à Toi la gratitude." },
+  { n:13, cat:"Louange", reps:3,
+    ar:"يَا رَبِّ لَكَ الْحَمْدُ كَمَا يَنْبَغِي لِجَلَالِ وَجْهِكَ وَعَظِيمِ سُلْطَانِكَ",
+    ph:"Yâ rabbi lakal-hamdu kamâ yanbaghî li-jalâli wajhika wa 'azîmi sultânik.",
+    fr:"Ô mon Seigneur ! À Toi la louange, telle qu'elle convient à la majesté de Ta Face et à la grandeur de Ta souveraineté." },
+  { n:14, cat:"Agrément (Ridâ)", reps:3,
+    ar:"رَضِيتُ بِاللهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ نَبِيًّا وَرَسُولًا",
+    ph:"Radîtu billâhi rabban, wa bil-islâmi dînan, wa bi-muhammadin nabiyyan wa rasûlan.",
+    fr:"Je me contente d'Allah comme Seigneur, de l'Islam comme religion, et de Muhammad comme Prophète et Messager." },
+  { n:15, cat:"Gloire étendue", reps:3,
+    ar:"سُبْحَانَ اللهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ",
+    ph:"Subhânallâhi wa bihamdih, 'adada khalqih, wa ridâ nafsih, wa zinata 'arshih, wa midâda kalimâtih.",
+    fr:"Gloire à Allah et louange à Lui, autant que le nombre de Ses créatures, autant que Sa Satisfaction, autant que le poids de Son Trône et autant que l'encre de Ses Paroles." },
+  { n:16, cat:"Bismillah protecteur", reps:3,
+    ar:"بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+    ph:"Bismillâhil-ladhî lâ yadurru ma'asmihî shay'un fil-ardi wa lâ fis-samâ'i wa huwas-samî'ul-'alîm.",
+    fr:"Au nom d'Allah, avec Lequel aucune chose sur terre ni dans le ciel ne peut causer de préjudice. Il est l'Omni-Entendant, l'Omni-Sachant." },
+  { n:17, cat:"Refuge contre le shirk", reps:3,
+    ar:"اللَّهُمَّ إِنَّا نَعُوذُ بِكَ مِنْ أَنْ نُشْرِكَ بِكَ شَيْئًا نَعْلَمُهُ، وَنَسْتَغْفِرُكَ لِمَا لَا نَعْلَمُهُ",
+    ph:"Allâhumma innâ na'ûdhu bika min an nushrika bika shay'an na'lamuh, wa nastaghfiruka limâ lâ na'lamuh.",
+    fr:"Ô Allah ! Nous cherchons refuge en Toi contre le fait de T'associer sciemment quelque chose, et nous T'implorons le pardon pour ce que nous ignorons." },
+  { n:18, cat:"Refuge dans les Paroles d'Allah", reps:3,
+    ar:"أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+    ph:"A'ûdhu bi-kalimâtillâhit-tâmmâti min sharri mâ khalaq.",
+    fr:"Je cherche refuge dans les Paroles parfaites d'Allah contre le mal de toute créature." },
+  { n:19, cat:"Protection complète", reps:3,
+    ar:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ",
+    ph:"Allâhumma innî a'ûdhu bika minal-hammi wal-hazan, wa minal-'ajzi wal-kasal, wa minal-jubni wal-bukhl, wa min ghalabatid-dayni wa qahrir-rijâl.",
+    fr:"Ô Allah ! Je cherche refuge en Toi contre l'inquiétude et la tristesse, contre l'impuissance et la paresse, contre la lâcheté et l'avarice, contre l'accablement des dettes et la tyrannie des hommes." },
+  { n:20, cat:"Santé du corps", reps:3,
+    ar:"اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي",
+    ph:"Allâhumma 'âfinî fî badanî. Allâhumma 'âfinî fî sam'î. Allâhumma 'âfinî fî basarî.",
+    fr:"Ô Allah ! Accorde-moi la bonne santé dans mon corps. Ô Allah ! Accorde-moi la bonne santé dans mon ouïe. Ô Allah ! Accorde-moi la bonne santé dans ma vue." },
+  { n:21, cat:"Refuge contre la mécréance", reps:3,
+    ar:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ",
+    ph:"Allâhumma innî a'ûdhu bika minal-kufri wal-faqr, wa a'ûdhu bika min 'adhâbil-qabr, lâ ilâha illâ ant.",
+    fr:"Ô Allah ! Je cherche refuge en Toi contre la mécréance et la pauvreté. Je cherche refuge en Toi contre le châtiment du tombeau. Il n'y a de divinité que Toi." },
+  { n:22, cat:"Sayyidul Istighfâr", reps:3,
+    ar:"اللَّهُمَّ أَنْتَ رَبِّي، لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+    ph:"Allâhumma anta rabbî, lâ ilâha illâ ant, khalaqtanî wa anâ 'abduk, wa anâ 'alâ 'ahdika wa wa'dika mas-tata't, a'ûdhu bika min sharri mâ sana't, abû'u laka bini'matika 'alayya, wa abû'u bidhambî, faghfir lî, fa-innahû lâ yaghfirudh-dhunûba illâ ant.",
+    fr:"Ô Allah ! Tu es mon Seigneur, pas de divinité sauf Toi. Tu m'as créé et je suis Ton serviteur. Je m'en tiens à Ton pacte et à Ta promesse autant que je le peux. Je cherche refuge en Toi contre le mal de ce que j'ai commis. Je reconnais Tes bienfaits sur moi et je reconnais mes péchés. Pardonne-moi donc, car nul ne pardonne les péchés sauf Toi." },
+  { n:23, cat:"Istighfâr", reps:3,
+    ar:"أَسْتَغْفِرُ اللهَ الْعَظِيمَ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ",
+    ph:"Astaghfirullâhal-'azîm alladhî lâ ilâha illâ huwal-hayyul-qayyûmu wa atûbu ilayh.",
+    fr:"Je demande pardon à Allah, l'Immense, Celui en dehors duquel il n'y a pas de divinité, le Vivant, Celui qui subsiste par Lui-même, et je me repens à Lui." },
+  { n:24, cat:"Tasbih et repentir", reps:3,
+    ar:"سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ",
+    ph:"Subhânakallâhumma wa bihamdik, ashhadu allâ ilâha illâ ant, astaghfiruka wa atûbu ilayk.",
+    fr:"Gloire à Toi, ô Allah, et louange à Toi ! Je témoigne qu'il n'y a de divinité que Toi. Je Te demande pardon et je me repens à Toi." },
+  { n:25, cat:"Salawât sur le Prophète ﷺ", reps:1,
+    ar:"اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ عَبْدِكَ وَرَسُولِكَ النَّبِيِّ الْأُمِّيِّ، وَعَلَى آلِهِ وَصَحْبِهِ وَسَلِّمْ تَسْلِيمًا",
+    ph:"Allâhumma salli 'alâ muhammadin 'abdika wa rasûlikan-nabiyyil-ummî, wa 'alâ âlihî wa sahbihî wa sallim taslîman.",
+    fr:"Ô Allah ! Accorde Tes bénédictions à Muhammad, Ton serviteur et Ton messager, le Prophète illettré, ainsi qu'à sa famille et ses Compagnons, et accorde-leur la paix." },
+  { n:26, cat:"Clôture — Glorification", reps:1,
+    ar:"سُبْحَانَ رَبِّكَ رَبِّ الْعِزَّةِ عَمَّا يَصِفُونَ، وَسَلَامٌ عَلَى الْمُرْسَلِينَ، وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+    ph:"Subhâna rabbika rabbil-'izzati 'ammâ yasifûn, wa salâmun 'alal-mursalîn, wal-hamdu lillâhi rabbil-'âlamîn.",
+    fr:"Gloire à ton Seigneur, le Seigneur de la Puissance, au-delà de ce qu'ils Lui attribuent. Paix sur les Messagers. Louange à Allah, Seigneur des mondes." },
+  { n:27, cat:"Du'â collectif (soir — avant Maghrib)", reps:1, note:"Soir uniquement",
+    ar:"اللَّهُمَّ إِنَّكَ تَعْلَمُ أَنَّ هَذِهِ الْقُلُوبَ قَدِ اجْتَمَعَتْ عَلَى مَحَبَّتِكَ، وَالْتَقَتْ عَلَى طَاعَتِكَ، وَتَوَحَّدَتْ عَلَى دَعْوَتِكَ، وَتَعَاهَدَتْ عَلَى نُصْرَةِ شَرِيعَتِكَ، فَوَثِّقِ اللَّهُمَّ رَابِطَتَهَا، وَأَدِمْ وُدَّهَا، وَاهْدِهَا سُبُلَهَا، وَامْلَأْهَا بِنُورِكَ الَّذِي لَا يَخْبُو، وَاشْرَحْ صُدُورَهَا بِفَيْضِ الْإِيمَانِ بِكَ، وَجَمِيلِ التَّوَكُّلِ عَلَيْكَ، وَأَحْيِهَا بِمَعْرِفَتِكَ، وَأَمِتْهَا عَلَى الشَّهَادَةِ فِي سَبِيلِكَ، إِنَّكَ نِعْمَ الْمَوْلَى وَنِعْمَ النَّصِيرُ",
+    ph:"Allâhumma innaka ta'lamu anna hâdhihil-qulûba qadij-tama'at 'alâ mahabbatik, waltaqat 'alâ tâ'atik...",
+    fr:"Ô Allah ! Tu sais que ces cœurs se sont rassemblés pour T'aimer, se sont rencontrés pour T'obéir, se sont unis pour Ta Da'wah et ont fait pacte pour soutenir Ta Loi. Renforce leur lien, rends leur affection durable, guide-les, remplis-les de Ta lumière, ouvre leurs poitrines au flot de la foi en Toi. Fais-les vivre dans Ta connaissance et fais-les mourir en martyrs sur Ta voie. Tu es certes le meilleur Protecteur et le meilleur Soutien." },
+];
 
-/* Surah list row */
-.sr-row{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(221,209,187,.55);cursor:pointer;transition:background .12s;gap:0;}
-.sr-row:hover,.sr-row:active{background:rgba(138,105,16,.06)}
-.sr-row .sr-num{width:36px;text-align:center;flex-shrink:0;font-size:14px;font-weight:700;color:var(--bl);}
-.sr-row .sr-info{flex:1;padding:0 10px;}
-.sr-row .sr-en{font-size:14px;font-weight:600;color:var(--brown);}
-.sr-row .sr-fr{font-size:11px;color:var(--bl);margin-top:2px;}
-.sr-row .sr-ar{font-family:'Scheherazade New',serif;font-size:22px;color:var(--blue);direction:rtl;flex-shrink:0;min-width:65px;text-align:center;}
-
-.verse-word{cursor:pointer;border-radius:3px;transition:background .12s;display:inline;}
-.verse-word:hover{background:rgba(138,105,16,.14)}
-
-/* Button reset */
-button{cursor:pointer;font-family:inherit;}
-
-/* Splash */
-#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;}
-#splash.out{opacity:0;pointer-events:none}
-.sp-ring{width:130px;height:130px;border-radius:50%;border:1.5px solid var(--gb);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
-.sp-inner{width:100px;height:100px;border-radius:50%;border:1px solid var(--gf);display:flex;align-items:center;justify-content:center;}
-.sp-ara{font-family:'Scheherazade New',serif;font-size:38px;color:var(--gold);}
-.sp-sub{font-size:11px;color:var(--bl);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;}
-.sp-bar{width:90px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
-.sp-fill{height:100%;background:var(--gold);width:0;transition:width 1.8s ease;}
-
-/* Toast */
-#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--brown);color:#FDF8EE;border-radius:20px;padding:7px 18px;font-size:13px;z-index:8000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px var(--shadow);}
-</style>
-</head>
-<body>
-
-<!-- SPLASH -->
-<div id="splash">
-  <div class="sp-ring"><div class="sp-inner"><div class="sp-ara">قرآن</div></div></div>
-  <div class="sp-sub">Al-Qurʾân · Lecture & Méditation</div>
-  <div class="sp-bar"><div class="sp-fill" id="spf"></div></div>
-</div>
-<div id="toast"></div>
-
-<!-- APP ROOT -->
-<div id="root">
-
-  <!-- ONBOARDING OVERLAY -->
-  <div id="onboard" style="display:none;position:fixed;inset:0;z-index:500;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:36px 30px;text-align:center;">
-    <div id="ob-icon" style="font-size:60px;margin-bottom:22px;animation:obFade .4s ease;"></div>
-    <div id="ob-title" style="font-size:22px;font-weight:700;color:var(--brown);margin-bottom:12px;"></div>
-    <div id="ob-body" style="font-size:14px;color:var(--bm);line-height:1.8;margin-bottom:30px;max-width:290px;"></div>
-    <div style="display:flex;gap:8px;margin-bottom:28px;" id="ob-dots"></div>
-    <button id="ob-btn" onclick="obNext()" style="width:230px;padding:14px;background:var(--gold);border:none;border-radius:14px;color:white;font-size:15px;font-weight:600;letter-spacing:.3px;"></button>
-    <button id="ob-skip" onclick="obDone()" style="margin-top:14px;background:none;border:none;color:var(--bl);font-size:13px;">Passer l'introduction</button>
-  </div>
-
-  <!-- SURAH INFO MODAL -->
-  <div id="info-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;align-items:flex-end;">
-    <div style="background:var(--bg2);border-radius:20px 20px 0 0;width:100%;animation:slideUp .25s ease;overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
-      <div style="height:4px;background:var(--gold);width:50px;border-radius:2px;margin:14px auto 0;flex-shrink:0;"></div>
-      <div style="padding:18px 20px 22px;overflow-y:auto;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-          <div>
-            <div id="inf-en" style="font-size:22px;font-weight:700;color:var(--brown);"></div>
-            <div id="inf-fr" style="font-size:14px;color:var(--bm);margin-top:3px;"></div>
-          </div>
-          <div id="inf-ar" style="font-family:'Scheherazade New',serif;font-size:36px;color:var(--blue);direction:rtl;"></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="inf-tags"></div>
-        <div id="inf-basmala" style="font-family:'Scheherazade New',serif;font-size:22px;color:var(--blue);text-align:center;direction:rtl;padding:14px;background:#F8F3E8;border-radius:10px;margin-bottom:14px;line-height:2;border:1px solid var(--border);"></div>
-        <div id="inf-desc" style="font-size:13px;color:var(--bm);line-height:1.8;margin-bottom:20px;"></div>
-        <button onclick="startReading()" style="width:100%;padding:14px;background:var(--gold);border:none;border-radius:12px;color:white;font-size:15px;font-weight:600;margin-bottom:8px;">Commencer la lecture →</button>
-        <button onclick="document.getElementById('info-modal').style.display='none'" style="width:100%;padding:10px;background:none;border:none;color:var(--bl);font-size:13px;">Annuler</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAFSIR MODAL -->
-  <div id="taf-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;align-items:flex-end;">
-    <div style="background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .25s ease;">
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-        <div><div style="font-size:15px;font-weight:700;color:var(--brown);">Tafsir Ibn Kathir</div><div id="taf-ref" style="font-size:11px;color:var(--bl);margin-top:2px;"></div></div>
-        <button onclick="document.getElementById('taf-modal').style.display='none'" style="background:none;border:none;font-size:20px;color:var(--bl);">✕</button>
-      </div>
-      <div id="taf-ara" style="padding:12px 16px;font-family:'Scheherazade New',serif;font-size:24px;color:var(--blue);text-align:right;direction:rtl;line-height:2;background:#F8F3E8;border-bottom:1px solid var(--border);flex-shrink:0;"></div>
-      <div id="taf-fr"  style="padding:10px 16px;font-size:13px;color:var(--bm);font-style:italic;line-height:1.7;border-bottom:1px solid var(--border);flex-shrink:0;"></div>
-      <div id="taf-body" style="padding:14px 16px;overflow-y:auto;flex:1;font-size:13.5px;line-height:1.9;color:var(--brown);"></div>
-    </div>
-  </div>
-
-  <!-- WORD POPUP -->
-  <div id="word-pop" style="display:none;position:fixed;bottom:120px;left:50%;transform:translateX(-50%);z-index:180;background:var(--bg2);border:1.5px solid var(--gold);border-radius:14px;padding:16px 22px;min-width:220px;box-shadow:0 8px 32px var(--shadow);text-align:center;animation:fadeUp .2s ease;">
-    <div id="wp-ara" style="font-family:'Scheherazade New',serif;font-size:28px;color:var(--blue);direction:rtl;margin-bottom:6px;"></div>
-    <div id="wp-tr" style="font-size:12px;color:var(--bm);font-style:italic;margin-bottom:4px;"></div>
-    <div id="wp-root" style="font-size:11px;color:var(--gold);margin-bottom:12px;"></div>
-    <button onclick="document.getElementById('word-pop').style.display='none'" style="background:var(--gold);border:none;border-radius:8px;color:white;padding:6px 20px;font-size:12px;font-weight:600;">Fermer</button>
-  </div>
-
-  <!-- HEADER -->
-  <header style="background:var(--bg2);border-bottom:1px solid var(--border);padding:11px 13px;display:flex;align-items:center;gap:9px;flex-shrink:0;box-shadow:0 1px 6px var(--shadow);">
-    <button onclick="toggleSidebar()" style="border:1px solid var(--border);background:none;border-radius:8px;padding:7px 10px;font-size:14px;color:var(--bm);">☰</button>
-    <div id="hdr" style="flex:1;text-align:center;">
-      <div style="font-size:17px;font-weight:700;color:var(--blue);">Al-Qurʾân</div>
-      <div style="font-size:10px;color:var(--bl);letter-spacing:1.2px;text-transform:uppercase;margin-top:1px;">Lecture & Méditation</div>
-    </div>
-    <div style="display:flex;gap:6px;">
-      <button onclick="switchTab('tools')" style="border:1px solid var(--border);background:none;border-radius:8px;padding:7px 8px;font-size:13px;" title="Dhikr & Outils">🤲</button>
-      <button onclick="toggleSettings()" style="border:1px solid var(--border);background:none;border-radius:8px;padding:7px 8px;font-size:13px;" title="Paramètres">⚙️</button>
-    </div>
-  </header>
-
-  <!-- TAB BAR -->
-  <nav style="display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;">
-    <button onclick="switchTab('home')"   id="t-home"   style="flex:1;padding:7px 2px;background:none;font-size:10px;color:var(--gold);border:none;border-top:2px solid var(--gold);line-height:1.4;">🏠<br>Accueil</button>
-    <button onclick="switchTab('quran')"  id="t-quran"  style="flex:1;padding:7px 2px;background:none;font-size:10px;color:var(--bl);border:none;border-top:2px solid transparent;line-height:1.4;">📖<br>Lire</button>
-    <button onclick="switchTab('search')" id="t-search" style="flex:1;padding:7px 2px;background:none;font-size:10px;color:var(--bl);border:none;border-top:2px solid transparent;line-height:1.4;">🔍<br>Chercher</button>
-    <button onclick="switchTab('tools')"  id="t-tools"  style="flex:1;padding:7px 2px;background:none;font-size:10px;color:var(--bl);border:none;border-top:2px solid transparent;line-height:1.4;">✨<br>Outils</button>
-    <button onclick="switchTab('bk')"     id="t-bk"     style="flex:1;padding:7px 2px;background:none;font-size:10px;color:var(--bl);border:none;border-top:2px solid transparent;line-height:1.4;position:relative;">🔖<br>Signets
-      <span id="bk-n" style="display:none;position:absolute;top:2px;right:3px;background:var(--gold);color:white;font-size:8px;border-radius:6px;padding:1px 4px;"></span>
-    </button>
-  </nav>
-
-  <!-- SIDEBAR OVERLAY & PANEL -->
-  <div id="sb-ov" onclick="closeSB()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:50;"></div>
-  <aside id="sidebar" style="position:fixed;top:0;left:0;height:100%;width:285px;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:60;transform:translateX(-100%);transition:transform .26s ease;box-shadow:4px 0 24px rgba(0,0,0,.1);">
-    <div style="padding:16px 13px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-      <div style="font-size:16px;font-weight:700;color:var(--brown);margin-bottom:10px;">Liste des sourates</div>
-      <div style="display:flex;background:#E0D8C5;border-radius:8px;padding:3px;margin-bottom:8px;">
-        <button onclick="setSBM('s')" id="sb-s" style="flex:1;padding:6px;border:none;border-radius:6px;background:var(--gold);color:white;font-size:11px;font-weight:600;">Sourates</button>
-        <button onclick="setSBM('j')" id="sb-j" style="flex:1;padding:6px;border:none;border-radius:6px;background:transparent;color:var(--bm);font-size:11px;">Juz</button>
-      </div>
-      <input id="sb-q" placeholder="Rechercher une sourate…" oninput="buildSB()" style="width:100%;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--brown);font-size:12px;outline:none;">
-    </div>
-    <!-- Sidebar column headers -->
-    <div style="display:flex;padding:7px 14px;border-bottom:1px solid var(--border);background:var(--active,#E8E0CE);flex-shrink:0;" id="sb-hdrs">
-      <div style="width:36px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;text-align:center;">N°</div>
-      <div style="flex:1;padding:0 10px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;">Sourate</div>
-      <div style="min-width:65px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;text-align:center;">Arabe</div>
-    </div>
-    <div id="sb-list" style="flex:1;overflow-y:auto;"></div>
-  </aside>
-
-  <!-- SETTINGS PANEL -->
-  <div id="s-panel" style="position:fixed;top:0;right:0;height:100%;width:290px;background:var(--bg2);border-left:1px solid var(--border);z-index:60;transform:translateX(100%);transition:transform .26s ease;box-shadow:-4px 0 20px rgba(0,0,0,.08);display:flex;flex-direction:column;">
-    <div style="padding:16px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-      <div style="font-size:16px;font-weight:700;color:var(--brown);">⚙️ Paramètres</div>
-      <button onclick="toggleSettings()" style="background:none;border:none;font-size:18px;color:var(--bl);">✕</button>
-    </div>
-    <div style="padding:14px;overflow-y:auto;flex:1;">
-      <div style="font-size:11px;color:var(--bl);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Récitateur</div>
-      <div id="rec-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"></div>
-      <div style="font-size:11px;color:var(--bl);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Taille texte coranique · <span id="fv">32</span>px</div>
-      <input type="range" id="fs-range" min="24" max="44" value="32" step="1" oninput="setFS(+this.value)" style="width:100%;accent-color:var(--gold);margin-bottom:16px;">
-      <div style="font-size:11px;color:var(--bl);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Vitesse de récitation</div>
-      <div style="display:flex;gap:5px;margin-bottom:16px;" id="spd-btns"></div>
-      <div id="togs" style="border-top:1px solid var(--border);padding-top:2px;"></div>
-    </div>
-  </div>
-  <div id="s-ov" onclick="toggleSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:59;"></div>
-
-  <!-- MAIN CONTENT -->
-  <main id="content" style="flex:1;overflow-y:auto;padding-bottom:112px;"></main>
-
-  <!-- AUDIO PLAYER -->
-  <div id="player" style="display:none;position:fixed;bottom:50px;left:0;right:0;background:var(--bg2);border-top:1.5px solid var(--border);box-shadow:0 -2px 16px var(--shadow);">
-    <div id="prog-wrap" style="height:3px;background:var(--border);cursor:pointer;" onclick="seekAudio(event)">
-      <div id="prog" style="height:100%;background:var(--gold);width:0%;transition:width .35s linear;pointer-events:none;border-radius:0 2px 2px 0;"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;">
-      <div id="wv" style="display:flex;align-items:center;gap:2px;height:22px;padding:0 3px;flex-shrink:0;">
-        <div style="width:3px;height:5px;border-radius:2px;background:var(--gold);opacity:.4;"></div>
-        <div style="width:3px;height:9px;border-radius:2px;background:var(--gold);opacity:.4;"></div>
-        <div style="width:3px;height:4px;border-radius:2px;background:var(--gold);opacity:.4;"></div>
-        <div style="width:3px;height:12px;border-radius:2px;background:var(--gold);opacity:.4;"></div>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div id="pl-t" style="font-size:13px;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div id="pl-s" style="font-size:10px;color:var(--bl);margin-top:1px;"></div>
-      </div>
-      <button id="b-prev" onclick="audioPrev()" style="background:none;border:none;font-size:20px;color:var(--brown);padding:0;opacity:.4;">⏮</button>
-      <button id="b-play" onclick="audioToggle()" style="width:42px;height:42px;border-radius:50%;background:var(--gold);border:none;color:white;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px var(--gb);">▶</button>
-      <button id="b-next" onclick="audioNext()" style="background:none;border:none;font-size:20px;color:var(--brown);padding:0;">⏭</button>
-      <button id="b-rpt"  onclick="cycleRpt()" style="background:none;border:none;font-size:15px;color:var(--bm);opacity:.3;">🔁</button>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAVIGATION -->
-  <nav style="position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;height:50px;padding-bottom:env(safe-area-inset-bottom);">
-    <button onclick="switchTab('home')"   style="flex:1;background:none;border:none;font-size:9px;color:var(--gold);padding:0;line-height:1.4;">🏠<br>Accueil</button>
-    <button onclick="switchTab('quran')"  style="flex:1;background:none;border:none;font-size:9px;color:var(--bl);padding:0;line-height:1.4;">📖<br>Lire</button>
-    <button onclick="switchTab('search')" style="flex:1;background:none;border:none;font-size:9px;color:var(--bl);padding:0;line-height:1.4;">🔍<br>Chercher</button>
-    <button onclick="switchTab('tools')"  style="flex:1;background:none;border:none;font-size:9px;color:var(--bl);padding:0;line-height:1.4;">✨<br>Outils</button>
-    <button onclick="switchTab('bk')"     style="flex:1;background:none;border:none;font-size:9px;color:var(--bl);padding:0;line-height:1.4;">🔖<br>Signets</button>
-  </nav>
-</div><!-- #root -->
-
-<script>
-'use strict';
-// ── STATIC DATA ─────────────────────────────────────────────────────────────
-// [n, translitération, traduction FR, versets, type(M=Mecquoise/D=Médinoise), arabe]
 const SD=[
 [1,'Al-Fatihah',"L'Ouverture",7,'M','الفاتحة'],[2,'Al-Baqarah','La Vache',286,'D','البقرة'],
 [3,'Ali-Imran',"La Famille d'Imrân",200,'D','آل عمران'],[4,'An-Nisa','Les Femmes',176,'D','النساء'],
@@ -272,643 +213,658 @@ const SD=[
 [25,'Al-Furqan','Le Critère',77,'M','الفرقان'],[26,'Ash-Shuara','Les Poètes',227,'M','الشعراء'],
 [27,'An-Naml','Les Fourmis',93,'M','النمل'],[28,'Al-Qasas','Le Récit',88,'M','القصص'],
 [29,'Al-Ankabut',"L'Araignée",69,'M','العنكبوت'],[30,'Ar-Rum','Les Romains',60,'M','الروم'],
-[31,'Luqman','Luqman',34,'M','لقمان'],[32,'As-Sajdah','La Prosternation',30,'M','السجدة'],
-[33,'Al-Ahzab','Les Coalisés',73,'D','الأحزاب'],[34,'Saba','Saba',54,'M','سبأ'],
-[35,'Fatir','Le Créateur',45,'M','فاطر'],[36,'Ya-Sin','Yâ-Sîn',83,'M','يس'],
-[37,'As-Saffat','Rangés en rangs',182,'M','الصافات'],[38,'Sad','Sad',88,'M','ص'],
-[39,'Az-Zumar','Les Groupes',75,'M','الزمر'],[40,'Ghafir','Celui qui pardonne',85,'M','غافر'],
-[41,'Fussilat','Exposés en détail',54,'M','فصلت'],[42,'Ash-Shura','La Consultation',53,'M','الشورى'],
-[43,'Az-Zukhruf',"L'Or",89,'M','الزخرف'],[44,'Ad-Dukhan','La Fumée',59,'M','الدخان'],
-[45,'Al-Jathiyah',"L'Agenouillée",37,'M','الجاثية'],[46,'Al-Ahqaf','Les Dunes',35,'M','الأحقاف'],
-[47,'Muhammad','Muhammad',38,'D','محمد'],[48,'Al-Fath','La Victoire',29,'D','الفتح'],
-[49,'Al-Hujurat','Les Appartements',18,'D','الحجرات'],[50,'Qaf','Qaf',45,'M','ق'],
-[51,'Adh-Dhariyat','Les Vents dispersants',60,'M','الذاريات'],[52,'At-Tur','Le Mont',49,'M','الطور'],
-[53,'An-Najm',"L'Étoile",62,'M','النجم'],[54,'Al-Qamar','La Lune',55,'M','القمر'],
-[55,'Ar-Rahman','Le Tout Miséricordieux',78,'D','الرحمن'],[56,'Al-Waqiah',"L'Événement",96,'M','الواقعة'],
-[57,'Al-Hadid','Le Fer',29,'D','الحديد'],[58,'Al-Mujadilah','La Discussion',22,'D','المجادلة'],
-[59,'Al-Hashr',"L'Exode",24,'D','الحشر'],[60,'Al-Mumtahanah',"L'Éprouvée",13,'D','الممتحنة'],
-[61,'As-Saff','Le Rang',14,'D','الصف'],[62,'Al-Jumuah','Le Vendredi',11,'D','الجمعة'],
-[63,'Al-Munafiqun','Les Hypocrites',11,'D','المنافقون'],[64,'At-Taghabun','La Déception mutuelle',18,'D','التغابن'],
-[65,'At-Talaq','Le Divorce',12,'D','الطلاق'],[66,'At-Tahrim',"L'Interdiction",12,'D','التحريم'],
-[67,'Al-Mulk','La Royauté',30,'M','الملك'],[68,'Al-Qalam','La Plume',52,'M','القلم'],
-[69,'Al-Haqqah','La Vérité incontestable',52,'M','الحاقة'],[70,'Al-Maarij','Les Degrés',44,'M','المعارج'],
-[71,'Nuh','Noé',28,'M','نوح'],[72,'Al-Jinn','Les Djinns',28,'M','الجن'],
-[73,'Al-Muzzammil',"L'Enveloppé",20,'M','المزمل'],[74,'Al-Muddaththir','Celui qui se couvre',56,'M','المدثر'],
-[75,'Al-Qiyamah','La Résurrection',40,'M','القيامة'],[76,'Al-Insan',"L'Homme",31,'D','الإنسان'],
-[77,'Al-Mursalat','Les Envoyés',50,'M','المرسلات'],[78,'An-Naba','La Nouvelle',40,'M','النبأ'],
-[79,'An-Naziat','Ceux qui arrachent',46,'M','النازعات'],[80,'Abasa','Il s\'est renfrogné',42,'M','عبس'],
-[81,'At-Takwir',"L'Enroulement",29,'M','التكوير'],[82,'Al-Infitar','La Déchirure',19,'M','الانفطار'],
-[83,'Al-Mutaffifin','Les Fraudeurs',36,'M','المطففين'],[84,'Al-Inshiqaq','La Fissure',25,'M','الانشقاق'],
-[85,'Al-Buruj','Les Constellations',22,'M','البروج'],[86,'At-Tariq',"L'Astre nocturne",17,'M','الطارق'],
-[87,'Al-Ala','Le Très-Haut',19,'M','الأعلى'],[88,'Al-Ghashiyah',"L'Enveloppant",26,'M','الغاشية'],
-[89,'Al-Fajr',"L'Aube",30,'M','الفجر'],[90,'Al-Balad','La Cité',20,'M','البلد'],
-[91,'Ash-Shams','Le Soleil',15,'M','الشمس'],[92,'Al-Layl','La Nuit',21,'M','الليل'],
-[93,'Ad-Duha','La Matinée',11,'M','الضحى'],[94,'Ash-Sharh',"L'Ouverture de la poitrine",8,'M','الشرح'],
-[95,'At-Tin','Le Figuier',8,'M','التين'],[96,'Al-Alaq','Le Caillot',19,'M','العلق'],
-[97,'Al-Qadr','La Nuit du Destin',5,'M','القدر'],[98,'Al-Bayyinah','La Preuve',8,'D','البينة'],
-[99,'Az-Zalzalah','Le Séisme',8,'D','الزلزلة'],[100,'Al-Adiyat','Les Coursières',11,'M','العاديات'],
-[101,'Al-Qariah','Le Fracas',11,'M','القارعة'],[102,'At-Takathur','La Profusion des biens',8,'M','التكاثر'],
-[103,'Al-Asr','Le Temps',3,'M','العصر'],[104,'Al-Humazah','Le Calomniateur',9,'M','الهمزة'],
-[105,'Al-Fil',"L'Éléphant",5,'M','الفيل'],[106,'Quraysh','Quraysh',4,'M','قريش'],
-[107,'Al-Maun',"L'Ustensile",7,'M','الماعون'],[108,'Al-Kawthar',"L'Abondance",3,'M','الكوثر'],
-[109,'Al-Kafirun','Les Infidèles',6,'M','الكافرون'],[110,'An-Nasr','Le Secours',3,'D','النصر'],
-[111,'Al-Masad','La Fibre',5,'M','المسد'],[112,'Al-Ikhlas','Le Monothéisme Pur',4,'M','الإخلاص'],
-[113,'Al-Falaq',"L'Aube",5,'M','الفلق'],[114,'An-Nas','Les Hommes',6,'M','الناس'],
+[36,'Ya-Sin','Yâ-Sîn',83,'M','يس'],[55,'Ar-Rahman','Le Tout Miséricordieux',78,'D','الرحمن'],
+[67,'Al-Mulk','La Royauté',30,'M','الملك'],[78,'An-Naba','La Nouvelle',40,'M','النبأ'],
+[112,'Al-Ikhlas','Le Monothéisme Pur',4,'M','الإخلاص'],[113,'Al-Falaq',"L'Aube",5,'M','الفلق'],
+[114,'An-Nas','Les Hommes',6,'M','الناس'],
 ];
+const OFFSETS={1:1,2:8,3:294,4:494,5:670,6:792,7:957,8:1163,9:1235,10:1364,11:1473,12:1596,13:1707,14:1750,15:1802,16:1901,17:2029,18:2140,19:2250,20:2348,21:2483,22:2595,23:2673,24:2791,25:2855,26:2932,27:3159,28:3252,29:3340,30:3409,36:3705,55:4901,67:5241,78:5672,112:6221,113:6225,114:6230};
+const RECITERS=[['ar.alafasy','Mishary Al-Afasy'],['ar.abdurrahmaansudais','As-Sudais'],['ar.husary','Al-Husary'],['ar.minshawi','Al-Minshawi']];
+const DHIKR=[['SubhanAllah','Gloire à Allah','#1B2D5A',33],['Alhamdulillah','Louange à Allah','#15803D',33],['AllahuAkbar','Allah est le plus Grand',C.gold,34],['La ilaha illallah','Pas de divinité sauf Allah','#9D174D',100]];
+const VDJ=[
+  {ar:'إِنَّ مَعَ الْعُسْرِ يُسْرًا',fr:'Certes, avec la difficulté vient la facilité.',ref:'Al-Inshirah (94) : 6'},
+  {ar:'وَبَشِّرِ الصَّابِرِينَ',fr:'Et annonce la bonne nouvelle aux endurants.',ref:'Al-Baqarah (2) : 155'},
+  {ar:'فَاذْكُرُونِي أَذْكُرْكُمْ',fr:'Souvenez-vous de Moi, Je Me souviendrai de vous.',ref:'Al-Baqarah (2) : 152'},
+  {ar:'إِنَّ اللَّهَ مَعَ الصَّابِرِينَ',fr:'Allah est avec ceux qui endurent.',ref:'Al-Baqarah (2) : 153'},
+  {ar:'حَسْبِيَ اللَّهُ وَنِعْمَ الْوَكِيلُ',fr:'Allah me suffit ; Il est le meilleur Protecteur.',ref:'Ali-Imran (3) : 173'},
+];
+const LEGEND=[{l:'Madd nécessaire',c:'#1D4ED8'},{l:'Madd normal',c:'#3B82F6'},{l:'Qalqala',c:'#B45309'},{l:'Ikhfâ',c:'#6D28D9'},{l:'Iqlab',c:'#0E7490'},{l:'Idghâm + ghunna',c:'#059669'},{l:'Ghunna',c:'#15803D'},{l:'Lettres silencieuses',c:'#888'}];
+const SURAH_DESC={1:"Dite 'Mère du Livre', récitée dans chaque rakah.",18:'À réciter chaque vendredi. Protection contre le Dajjal.',36:'Surnommée le cœur du Coran.',67:'Protège du châtiment du tombeau.',112:'Équivalant à un tiers du Coran en récompense.'};
 
-const OFFSETS={1:1,2:8,3:294,4:494,5:670,6:792,7:957,8:1163,9:1235,10:1364,11:1473,12:1596,13:1707,14:1750,15:1802,16:1901,17:2029,18:2140,19:2250,20:2348,21:2483,22:2595,23:2673,24:2791,25:2855,26:2932,27:3159,28:3252,29:3340,30:3409,31:3469,32:3503,33:3533,34:3606,35:3660,36:3705,37:3788,38:3970,39:4058,40:4133,41:4218,42:4272,43:4325,44:4414,45:4473,46:4510,47:4545,48:4583,49:4612,50:4630,51:4675,52:4735,53:4784,54:4846,55:4901,56:4979,57:5075,58:5104,59:5126,60:5150,61:5163,62:5177,63:5188,64:5199,65:5217,66:5229,67:5241,68:5271,69:5323,70:5375,71:5419,72:5447,73:5475,74:5495,75:5551,76:5591,77:5622,78:5672,79:5712,80:5758,81:5800,82:5829,83:5848,84:5884,85:5909,86:5931,87:5948,88:5967,89:5993,90:6023,91:6043,92:6058,93:6079,94:6090,95:6098,96:6106,97:6125,98:6130,99:6138,100:6146,101:6157,102:6168,103:6176,104:6179,105:6188,106:6193,107:6197,108:6204,109:6207,110:6213,111:6216,112:6221,113:6225,114:6230};
-
-const RECITERS=[['ar.alafasy','Mishary Al-Afasy'],['ar.abdurrahmaansudais','Abdurrahmaan As-Sudais'],['ar.husary','Mahmoud Al-Husary'],['ar.minshawi','Mohammad Al-Minshawi']];
-const JUZ=[{n:1,s:1,fr:'Alif Lam Mim'},{n:2,s:2,fr:'Sayaqool'},{n:3,s:3,fr:'Tilkar Rusul'},{n:4,s:4,fr:'Lan Tanaloo'},{n:5,s:4,fr:'Wal Muhsanat'},{n:6,s:4,fr:'La Yuhibbullah'},{n:7,s:5,fr:'Wa Iza Samiu'},{n:8,s:6,fr:'Wa Law Annana'},{n:9,s:7,fr:'Qalal Malao'},{n:10,s:8,fr:"Wa'alamu"},{n:11,s:9,fr:'Yatazeroon'},{n:12,s:11,fr:'Wa Ma Min Dabbah'},{n:13,s:12,fr:'Wa Ma Ubarrio'},{n:14,s:15,fr:'Rubama'},{n:15,s:17,fr:'Subhanalazi'},{n:16,s:18,fr:'Qal Alam'},{n:17,s:21,fr:'Iqtaraba'},{n:18,s:23,fr:'Qad Aflaha'},{n:19,s:25,fr:'Wa Qalallazina'},{n:20,s:27,fr:'Aman Khalaq'},{n:21,s:29,fr:'Utlu Ma Oohi'},{n:22,s:33,fr:'Wa Man Yaqnut'},{n:23,s:36,fr:'Wa Mali'},{n:24,s:39,fr:'Faman Azlam'},{n:25,s:41,fr:'Ilayhi Yuraddu'},{n:26,s:46,fr:'Ha Mim'},{n:27,s:51,fr:'Qala Fama'},{n:28,s:58,fr:'Qad Samia Allah'},{n:29,s:67,fr:'Tabarakallazi'},{n:30,s:78,fr:'Amma'}];
-const DHIKR_DATA=[['SubhanAllah','Gloire à Allah','#1B2D5A',33],['Alhamdulillah','Louange à Allah','#15803D',33],['AllahuAkbar','Allah est le plus Grand','#8A6910',34],['La ilaha illallah','Pas de divinité sauf Allah','#9D174D',100]];
-const PLAN30=['Al-Fatiha + Al-Baqarah 1–141','Al-Baqarah 142–252','Al-Baqarah 253 + Ali-Imran 1–92','Ali-Imran 93–200','An-Nisa 1–23','An-Nisa 24–147','An-Nisa 148 + Al-Maidah 1–81','Al-Maidah 82 + Al-Anam 1–110','Al-Anam 111 + Al-Araf 1–87','Al-Araf 88 + Al-Anfal 1–40','Al-Anfal 41 + At-Tawbah 1–92','At-Tawbah 93 + Hud 1–5','Hud 6 + Yusuf 1–52','Yusuf 53 + Al-Hijr','Al-Isra + Al-Kahf 1–74','Al-Kahf 75 + Ta-Ha','Al-Anbiya + Al-Hajj','Al-Muminun + Al-Furqan 20','Al-Furqan 21 + An-Naml 55','An-Naml 56 + Al-Ankabut 45','Al-Ankabut 46 + Al-Ahzab 30','Al-Ahzab 31 + Ya-Sin 27','Ya-Sin 28 + Az-Zumar 31','Az-Zumar 32 + Fussilat 46','Fussilat 47 + Al-Jathiya','Al-Ahqaf + Adh-Dhariyat 30','Adh-Dhariyat 31 + Al-Hadid','Al-Mujadila + At-Tahrim','Al-Mulk + Al-Mursalat','An-Naba + An-Nas'];
-const VDJ=[{ar:'إِنَّ مَعَ الْعُسْرِ يُسْرًا',fr:'Certes, avec la difficulté vient la facilité.',ref:'Al-Inshirah (94) : 6'},{ar:'وَبَشِّرِ الصَّابِرِينَ',fr:'Et annonce la bonne nouvelle aux endurants.',ref:'Al-Baqarah (2) : 155'},{ar:'فَاذْكُرُونِي أَذْكُرْكُمْ',fr:'Souvenez-vous de Moi, Je Me souviendrai de vous.',ref:'Al-Baqarah (2) : 152'},{ar:'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً',fr:'Seigneur, accorde-nous le bien en ce monde et dans l\'au-delà.',ref:'Al-Baqarah (2) : 201'},{ar:'إِنَّ اللَّهَ مَعَ الصَّابِرِينَ',fr:'Allah est avec ceux qui endurent.',ref:'Al-Baqarah (2) : 153'},{ar:'وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ',fr:'Et Il est avec vous où que vous soyez.',ref:'Al-Hadid (57) : 4'},{ar:'حَسْبِيَ اللَّهُ وَنِعْمَ الْوَكِيلُ',fr:'Allah me suffit ; Il est le meilleur Protecteur.',ref:'Ali-Imran (3) : 173'}];
-const OB=[{icon:'📖',title:'Bienvenue sur Al-Qurʾân',body:'Lisez le Noble Coran en français avec Tajweed coloré, audio de qualité et bien plus encore.',btn:'Suivant'},{icon:'🎧',title:'Écoutez & Méditez',body:'Récitation audio verset par verset avec 4 récitateurs célèbres, contrôle de la vitesse et répétition.',btn:'Suivant'},{icon:'🎓',title:'Apprenez & Progressez',body:'Mode mémorisation (Hifz), compteur de Dhikr, plan Khatma 30 jours et suivi de lecture quotidien.',btn:'Commencer'}];
-const SURAH_DESCS={1:'Dite "Mère du Livre" (Umm Al-Kitab), cette sourate est récitée dans chaque unité de prière. Elle résume les piliers de la foi islamique et constitue la quintessence du Coran.',2:'La plus longue sourate du Coran. Elle traite des fondements de l\'Islam : la foi, la prière, le jeûne, le hajj, les transactions et les lois familiales.',18:'À réciter chaque vendredi. Elle relate la parabole des gens de la caverne et constitue une protection contre le Dajjal selon les hadiths.',36:'Surnommée "le cœur du Coran". Elle traite de la résurrection, du pouvoir créateur d\'Allah et est souvent récitée auprès des mourants.',55:'Sourate de la miséricorde divine. Elle répète le verset "Laquelle des bienfaits de votre Seigneur nierez-vous ?" comme un refrain puissant.',67:'Révélée pour protéger son récitant du châtiment du tombeau. Elle souligne la majesté et la souveraineté absolue d\'Allah.',112:'Équivalant à un tiers du Coran en récompense spirituelle. Elle définit le pur monothéisme islamique (Tawhid).'};
-
-// ── STATE ──────────────────────────────────────────────────────────────────
-function lsg(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}}
-function lss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
-
-let S={
-  tab:'home', sn:1, vi:0,
-  ayahs:[], frV:[], loading:false,
-  playing:false, repeat:'none',
-  fs:lsg('q_fs',32), rec:lsg('q_rec','ar.alafasy'), spd:lsg('q_spd',1),
-  showFr:lsg('q_fr',true), tj:lsg('q_tj',true), hz:lsg('q_hz',false),
-  sbOpen:false, sbm:'s', settOpen:false,
-  bk:lsg('q_bk',[]),
-  stats:lsg('q_stats',{today:0,week:0,total:0,streak:0,lastDay:'',days:[0,0,0,0,0,0,0]}),
-  versesDone:new Set(), revWords:new Set(),
-  allFr:null, allFrLoading:false,
-  sInfoPending:null,
-};
-let dc=[0,0,0,0];
-let obStep=0;
-
-// ── AUDIO ──────────────────────────────────────────────────────────────────
-const aud=new Audio();
-aud.addEventListener('ended',()=>{
-  if(S.repeat==='verse'){aud.play();return;}
-  S.versesDone.add(S.vi);
-  const nx=S.vi+1;
-  if(nx<S.ayahs.length)playAt(nx);
-  else if(S.repeat==='surah')playAt(0);
-  else{S.playing=false;updPlay();}
-});
-aud.addEventListener('timeupdate',()=>{
-  if(aud.duration>0){const p=document.getElementById('prog');if(p)p.style.width=(aud.currentTime/aud.duration*100)+'%';}
-});
-aud.addEventListener('play', ()=>{S.playing=true;updPlay();wave(true);});
-aud.addEventListener('pause',()=>{S.playing=false;updPlay();wave(false);});
-
-function wave(on){
-  const bars=document.querySelectorAll('#wv div');
-  const an=['bar1 .5s ease infinite','bar2 .4s ease .1s infinite','bar3 .6s ease .05s infinite','bar4 .45s ease .15s infinite'];
-  bars.forEach((b,i)=>{b.style.animation=on?an[i]:'none';b.style.opacity=on?'1':'.4';});
-  const bp=document.getElementById('b-play');
-  if(bp)bp.style.animation=on?'pulse 1.5s ease infinite':'none';
-}
-function updPlay(){const b=document.getElementById('b-play');if(b)b.textContent=S.playing?'⏸':'▶';}
-function haptic(){try{navigator.vibrate&&navigator.vibrate(30);}catch{}}
-
-function seekAudio(e){
-  const pw=document.getElementById('prog-wrap');if(!pw)return;
-  const r=pw.getBoundingClientRect();
-  const pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-  if(aud.duration)aud.currentTime=pct*aud.duration;
-}
-
-// ── TOAST ──────────────────────────────────────────────────────────────────
-let _tt;
-function toast(msg,dur=2600){
-  const t=document.getElementById('toast');if(!t)return;
-  clearTimeout(_tt);t.textContent=msg;t.style.opacity='1';
-  _tt=setTimeout(()=>t.style.opacity='0',dur);
-}
-window.showToast=toast;
-
-// ── STATS ──────────────────────────────────────────────────────────────────
-function trackVerse(){
-  const now=new Date().toDateString();
-  const s=S.stats;
-  if(s.lastDay!==now){
-    if(s.lastDay){
-      const yest=new Date(Date.now()-86400000).toDateString();
-      if(s.lastDay===yest)s.streak++;else s.streak=1;
-    }else s.streak=1;
-    s.today=0;s.lastDay=now;
-    s.days.push(0);if(s.days.length>7)s.days.shift();
-  }
-  s.today++;s.week=(s.week||0)+1;s.total=(s.total||0)+1;
-  if(s.days.length)s.days[s.days.length-1]++;
-  S.stats=s;lss('q_stats',s);
-}
-
-// ── ONBOARDING ─────────────────────────────────────────────────────────────
-function initOB(){
-  if(lsg('q_ob',false))return;
-  const el=document.getElementById('onboard');
-  el.style.display='flex';obStep=0;renderOB();
-}
-function renderOB(){
-  const s=OB[obStep];
-  document.getElementById('ob-icon').textContent=s.icon;
-  document.getElementById('ob-title').textContent=s.title;
-  document.getElementById('ob-body').textContent=s.body;
-  document.getElementById('ob-btn').textContent=s.btn;
-  document.getElementById('ob-skip').style.display=obStep<2?'block':'none';
-  document.getElementById('ob-dots').innerHTML=OB.map((_,i)=>
-    `<div style="width:${i===obStep?22:8}px;height:8px;border-radius:4px;background:${i===obStep?'var(--gold)':'var(--border)'};transition:all .3s;cursor:pointer;" onclick="obStep=${i};renderOB()"></div>`
-  ).join('');
-}
-function obNext(){if(obStep<OB.length-1){obStep++;renderOB();}else obDone();}
-function obDone(){lss('q_ob',true);document.getElementById('onboard').style.display='none';}
-
-// ── SETTINGS ───────────────────────────────────────────────────────────────
-function buildSettings(){
-  document.getElementById('rec-list').innerHTML=RECITERS.map(([id,name])=>
-    `<button onclick="setRec('${id}')" style="padding:10px 12px;border-radius:9px;border:1.5px solid ${S.rec===id?'var(--gold)':'var(--border)'};background:${S.rec===id?'var(--gf)':'none'};text-align:left;font-size:12px;color:var(--brown);">${name}</button>`
-  ).join('');
-  document.getElementById('spd-btns').innerHTML=['0.75','1','1.25','1.5'].map(v=>
-    `<button onclick="setSpd(${v})" style="flex:1;padding:6px 0;border:1px solid ${+v===S.spd?'var(--gold)':'var(--border)'};border-radius:6px;background:${+v===S.spd?'var(--gf)':'none'};font-size:11px;color:${+v===S.spd?'var(--gold)':'var(--bm)'};">${v}×</button>`
-  ).join('');
-  document.getElementById('fv').textContent=S.fs;
-  const fsr=document.getElementById('fs-range');if(fsr)fsr.value=S.fs;
-  const togItems=[['Traduction française','showFr'],['Couleurs Tajweed','tj'],['Mode mémorisation (Hifz)','hz']];
-  document.getElementById('togs').innerHTML=togItems.map(([l,k])=>
-    `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
-      <div style="flex:1;font-size:13px;color:var(--brown);">${l}</div>
-      <div onclick="togS('${k}')" style="width:42px;height:23px;border-radius:12px;background:${S[k]?'var(--gold)':'var(--border)'};position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;">
-        <div style="position:absolute;top:2.5px;left:${S[k]?'20':'2.5'}px;width:18px;height:18px;border-radius:50%;background:white;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.15);"></div>
-      </div>
-    </div>`
-  ).join('');
-}
-function togS(k){S[k]=!S[k];lss('q_'+k,S[k]);buildSettings();if(S.tab==='quran')render();}
-function setRec(r){S.rec=r;lss('q_rec',r);aud.src='';buildSettings();toast('Récitateur mis à jour');}
-function setFS(v){S.fs=v;document.getElementById('fv').textContent=v;lss('q_fs',v);if(S.tab==='quran')render();}
-function setSpd(v){S.spd=+v;lss('q_spd',+v);aud.playbackRate=+v;buildSettings();}
-
-// ── SIDEBAR ────────────────────────────────────────────────────────────────
-function surahRow(s,inSidebar=false){
-  const [n,en,fr,v,type,ar]=s;
-  const icon=type==='M'?'🕋':'🕌';
-  const ac=n===S.sn;
-  return `<div onclick="${inSidebar?'closeSB();':''}openSurahInfo(${n})" class="sr-row" style="background:${ac&&inSidebar?'rgba(138,105,16,.08)':'transparent'};">
-    <div class="sr-num" style="color:${ac?'var(--gold)':'var(--bl)'};">${n}</div>
-    <div class="sr-info">
-      <div class="sr-en" style="color:${ac?'var(--gold)':'var(--brown)'};">${en}</div>
-      <div class="sr-fr">${fr} ${icon}</div>
+/* ── ATOMS ── */
+const AnwarLogo=({size=36})=>(
+  <svg width={size} height={size} viewBox="0 0 120 120" style={{flexShrink:0}}>
+    <circle cx="60" cy="60" r="56" fill="white" stroke="#1B2D5A" strokeWidth="3"/>
+    <circle cx="60" cy="60" r="50" fill="none" stroke="#1B2D5A" strokeWidth=".8" opacity=".35"/>
+    <text x="60" y="56" fontFamily="'Scheherazade New',serif" fontSize="34" fill="#1B2D5A" textAnchor="middle" dominantBaseline="middle">أنور</text>
+    <text x="60" y="82" fontFamily="sans-serif" fontSize="11" fill="#1B2D5A" textAnchor="middle" letterSpacing="2">ANWAR</text>
+    <text x="60" y="95" fontFamily="sans-serif" fontSize="9" fill="#9B7A50" textAnchor="middle">App</text>
+  </svg>
+);
+const Btn=({children,onClick,style={},disabled=false})=>(
+  <button onClick={onClick} disabled={disabled} style={{background:'none',border:'none',cursor:disabled?'not-allowed':'pointer',fontFamily:UI,color:C.brown,padding:0,opacity:disabled?.38:1,...style}}>{children}</button>
+);
+const Toggle=({on,onToggle})=>(
+  <div onClick={onToggle} style={{width:42,height:23,borderRadius:12,background:on?C.gold:C.border,position:'relative',cursor:'pointer',transition:'background .2s',flexShrink:0}}>
+    <div style={{position:'absolute',top:2.5,left:on?20:2.5,width:18,height:18,borderRadius:'50%',background:'white',transition:'left .2s',boxShadow:'0 1px 3px rgba(0,0,0,.15)'}}/>
+  </div>
+);
+const Spinner=({text='Chargement…'})=>(
+  <div style={{textAlign:'center',padding:70,fontFamily:UI}}>
+    <div style={{width:28,height:28,border:`2px solid ${C.border}`,borderTop:`2px solid ${C.gold}`,borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 14px'}}/>
+    <div style={{fontSize:12,color:C.bl}}>{text}</div>
+  </div>
+);
+const SurahRow=({s,active,onClick})=>{
+  const[n,en,fr,v,type,ar]=s;
+  return(
+    <div className="sr-row" onClick={onClick} style={{background:active?'rgba(138,105,16,.08)':'transparent'}}>
+      <div style={{width:36,textAlign:'center',fontSize:15,fontWeight:700,color:active?C.gold:C.bl,flexShrink:0}}>{n}</div>
+      <div style={{flex:1,padding:'0 10px'}}><div style={{fontSize:14,fontWeight:600,color:active?C.gold:C.brown}}>{en}</div><div style={{fontSize:11,color:C.bl,marginTop:2}}>{fr} {type==='M'?'🕋':'🕌'}</div></div>
+      <div style={{fontFamily:ARA,fontSize:22,color:C.blue,direction:'rtl',flexShrink:0,minWidth:65,textAlign:'center'}}>{ar}</div>
     </div>
-    <div class="sr-ar">${ar}</div>
-  </div>`;
-}
+  );
+};
 
-function buildSB(){
-  const list=document.getElementById('sb-list');if(!list)return;
-  const q=(document.getElementById('sb-q')?.value||'').toLowerCase();
-  const hdrs=document.getElementById('sb-hdrs');
-  if(S.sbm==='s'){
-    if(hdrs)hdrs.style.display='flex';
-    const items=SD.filter(s=>!q||s[1].toLowerCase().includes(q)||s[2].toLowerCase().includes(q)||String(s[0]).startsWith(q));
-    list.innerHTML=items.map(s=>surahRow(s,true)).join('');
-  }else{
-    if(hdrs)hdrs.style.display='none';
-    list.innerHTML=JUZ.map(j=>`<div onclick="closeSB();openSurahInfo(${j.s})" class="sr-row" style="gap:10px;">
-      <div style="width:36px;text-align:center;font-size:14px;font-weight:700;color:var(--gold);flex-shrink:0;">${j.n}</div>
-      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--brown);">Juz ${j.n}</div><div style="font-size:11px;color:var(--bl);margin-top:2px;">${j.fr}</div></div>
-      <div style="font-size:11px;color:var(--bl);">S.${j.s}</div>
-    </div>`).join('');
-  }
-}
-
-function toggleSidebar(){
-  S.sbOpen=!S.sbOpen;
-  document.getElementById('sidebar').style.transform=S.sbOpen?'translateX(0)':'translateX(-100%)';
-  document.getElementById('sb-ov').style.display=S.sbOpen?'block':'none';
-  if(S.sbOpen)buildSB();
-}
-function closeSB(){
-  S.sbOpen=false;
-  document.getElementById('sidebar').style.transform='translateX(-100%)';
-  document.getElementById('sb-ov').style.display='none';
-}
-function setSBM(m){
-  S.sbm=m;
-  document.getElementById('sb-s').style.cssText=`flex:1;padding:6px;border:none;border-radius:6px;background:${m==='s'?'var(--gold)':'transparent'};color:${m==='s'?'white':'var(--bm)'};font-size:11px;font-weight:${m==='s'?600:400};`;
-  document.getElementById('sb-j').style.cssText=`flex:1;padding:6px;border:none;border-radius:6px;background:${m==='j'?'var(--gold)':'transparent'};color:${m==='j'?'white':'var(--bm)'};font-size:11px;`;
-  const q=document.getElementById('sb-q');if(q)q.style.display=m==='s'?'block':'none';
-  buildSB();
-}
-
-function toggleSettings(){
-  S.settOpen=!S.settOpen;
-  document.getElementById('s-panel').style.transform=S.settOpen?'translateX(0)':'translateX(100%)';
-  document.getElementById('s-ov').style.display=S.settOpen?'block':'none';
-  if(S.settOpen)buildSettings();
-}
-
-// ── SURAH INFO MODAL ────────────────────────────────────────────────────────
-function openSurahInfo(n){
-  const s=SD.find(x=>x[0]===n);if(!s)return;haptic();
-  const [,en,fr,v,type,ar]=s;
-  const icon=type==='M'?'🕋':'🕌';
-  const typeFr=type==='M'?'Mecquoise':'Médinoise';
-  document.getElementById('inf-en').textContent=en;
-  document.getElementById('inf-fr').textContent=fr;
-  document.getElementById('inf-ar').textContent=ar;
-  document.getElementById('inf-tags').innerHTML=
-    `<span style="padding:4px 11px;border-radius:20px;font-size:11px;background:var(--gf);border:1px solid var(--gb);color:var(--gold);font-weight:600;">${icon} ${typeFr}</span>`+
-    `<span style="padding:4px 11px;border-radius:20px;font-size:11px;background:var(--gf);border:1px solid var(--border);color:var(--bm);">${v} versets</span>`+
-    `<span style="padding:4px 11px;border-radius:20px;font-size:11px;background:var(--gf);border:1px solid var(--border);color:var(--bm);">Sourate ${n} / 114</span>`;
-  document.getElementById('inf-basmala').textContent=n===9?'(Pas de Basmala pour At-Tawbah)':'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-  document.getElementById('inf-desc').textContent=SURAH_DESCS[n]||`Sourate ${en} (${fr}) — ${typeFr}, ${v} versets. Cliquez sur "Commencer la lecture" pour accéder au texte complet avec traduction et audio.`;
-  S.sInfoPending=n;
-  document.getElementById('info-modal').style.display='flex';
-}
-function startReading(){
-  document.getElementById('info-modal').style.display='none';
-  if(S.sInfoPending!=null){navTo(S.sInfoPending);S.sInfoPending=null;}
-}
-
-// ── NAVIGATION & LOADING ────────────────────────────────────────────────────
-function navTo(n){
-  closeSB();S.sn=n;loadSurah(n);switchTab('quran');
-}
-
-function loadSurah(n){
-  S.loading=true;S.ayahs=[];S.frV=[];S.vi=0;
-  S.versesDone=new Set();S.revWords=new Set();
-  aud.src='';S.playing=false;wave(false);updPlay();render();
-  lss('q_last',{sn:n,vi:0});
-
-  fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,fr.hamidullah`)
-    .then(r=>r.json())
-    .then(({code,data})=>{
-      if(code===200&&Array.isArray(data)&&data.length>=2){
-        S.ayahs=data[0].ayahs||[];
-        S.frV=data[1].ayahs||[];
-      }
-      S.loading=false;
-      updateHeaderForSurah(n);
-      render();
-    })
-    .catch(()=>{S.loading=false;render();});
-
-  // Background load of full Coran for global search
-  if(!S.allFr&&!S.allFrLoading){
-    S.allFrLoading=true;
-    fetch('https://api.alquran.cloud/v1/quran/fr.hamidullah')
-      .then(r=>r.json())
-      .then(({code,data})=>{
-        if(code===200&&data?.surahs){
-          const all=[];
-          data.surahs.forEach(s=>s.ayahs.forEach(a=>all.push({...a,surah:s.number})));
-          S.allFr=all;
-          if(S.tab==='search')render();
-        }
-        S.allFrLoading=false;
-      })
-      .catch(()=>{S.allFrLoading=false;});
-  }
-}
-
-function updateHeaderForSurah(n){
-  const s=SD.find(x=>x[0]===n);
-  const hdr=document.getElementById('hdr');
-  if(!hdr||!s)return;
-  const icon=s[4]==='M'?'🕋':'🕌';
-  hdr.innerHTML=`<div style="font-size:16px;font-weight:700;color:var(--brown);">${s[1]} <span style="font-weight:400;font-size:13px;color:var(--bl);">(${s[2]})</span></div><div style="font-size:10px;color:var(--bl);letter-spacing:1px;text-transform:uppercase;margin-top:1px;">${icon} ${s[4]==='M'?'Mecquoise':'Médinoise'} · ${s[3]} versets</div>`;
-}
-
-function aURL(n,i){
-  const o=OFFSETS[n];if(!o)return null;
-  return `https://cdn.islamic.network/quran/audio/128/${S.rec}/${o+i}.mp3`;
-}
-
-function playAt(idx){
-  if(idx<0||idx>=S.ayahs.length)return;
-  S.vi=idx;haptic();
-  const url=aURL(S.sn,idx);
-  if(url){aud.src=url;aud.playbackRate=S.spd;aud.play().catch(()=>{});}
-  updPlayer();trackVerse();
-  lss('q_last',{sn:S.sn,vi:idx});
-  render();
-  setTimeout(()=>{
-    const el=document.querySelector(`[data-vi="${idx}"]`);
-    el?.scrollIntoView({behavior:'smooth',block:'center'});
-  },80);
-}
-
-function audioToggle(){
-  if(S.playing)aud.pause();
-  else{if(aud.src)aud.play().catch(()=>{});else playAt(S.vi);}
-}
-function audioPrev(){if(S.vi>0)playAt(S.vi-1);}
-function audioNext(){if(S.vi<S.ayahs.length-1)playAt(S.vi+1);}
-function cycleRpt(){
-  S.repeat=S.repeat==='none'?'verse':S.repeat==='verse'?'surah':'none';
-  const b=document.getElementById('b-rpt');if(!b)return;
-  b.style.opacity=S.repeat==='none'?'.3':'1';
-  b.textContent=S.repeat==='verse'?'🔂':'🔁';
-}
-
-function updPlayer(){
-  const pl=document.getElementById('player');if(!pl)return;
-  if(S.tab==='quran'&&S.ayahs.length){
-    pl.style.display='block';
-    const s=SD.find(x=>x[0]===S.sn);
-    document.getElementById('pl-t').textContent=s?`${s[1]} — ${s[2]}`:'';
-    document.getElementById('pl-s').textContent=`Verset ${S.vi+1} sur ${S.ayahs.length} · ${s?.[4]==='M'?'Mecquoise 🕋':'Médinoise 🕌'}`;
-    document.getElementById('b-prev').style.opacity=S.vi===0?'.4':'1';
-    document.getElementById('b-next').style.opacity=S.vi>=S.ayahs.length-1?'.4':'1';
-  }else pl.style.display='none';
-}
-
-// ── BOOKMARKS ─────────────────────────────────────────────────────────────
-function toggleBk(sn,idx,e){
-  e&&e.stopPropagation();haptic();
-  const key=`${sn}:${idx+1}`;
-  const s=SD.find(x=>x[0]===sn);
-  const ex=S.bk.some(b=>b.key===key);
-  if(ex)S.bk=S.bk.filter(b=>b.key!==key);
-  else S.bk.push({key,sn,vi:idx,en:s?.[1]||'',fr:s?.[2]||'',frPrev:(S.frV[idx]?.text||'').slice(0,100)});
-  lss('q_bk',S.bk);
-  updBadge();
-  toast(ex?'Signet retiré':'🔖 Signet ajouté');
-  render();
-}
-function rmBk(key,e){e&&e.stopPropagation();S.bk=S.bk.filter(b=>b.key!==key);lss('q_bk',S.bk);updBadge();render();}
-function updBadge(){const n=document.getElementById('bk-n');if(n){n.textContent=S.bk.length;n.style.display=S.bk.length?'inline':'none';}}
-
-// ── TAFSIR ────────────────────────────────────────────────────────────────
-function openTafsir(idx,e){
-  e&&e.stopPropagation();haptic();
-  const ay=S.ayahs[idx];const fr=S.frV[idx];const s=SD.find(x=>x[0]===S.sn);
-  document.getElementById('taf-ref').textContent=`${s?.[1]||''} · Verset ${idx+1}`;
-  document.getElementById('taf-ara').textContent=ay?.text||'';
-  document.getElementById('taf-fr').textContent=fr?.text||'';
-  document.getElementById('taf-body').innerHTML='<div style="text-align:center;padding:24px;"><div style="width:24px;height:24px;border:2px solid var(--border);border-top:2px solid var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div><div style="font-size:12px;color:var(--bl);">Chargement…</div></div>';
-  document.getElementById('taf-modal').style.display='flex';
-  fetch(`https://api.alquran.cloud/v1/ayah/${S.sn}:${idx+1}/editions/en.ibnkathir`)
-    .then(r=>r.json())
-    .then(({code,data})=>{
-      const text=code===200&&Array.isArray(data)?data[0]?.text:null;
-      document.getElementById('taf-body').innerHTML=text?
-        `<div style="font-size:11px;color:var(--bl);padding:7px 11px;background:#FFFBEE;border-radius:7px;margin-bottom:14px;border:1px solid var(--border);">📘 Tafsir Ibn Kathir · Version anglaise (intégration française en cours)</div><div style="font-size:13.5px;line-height:1.95;">${text}</div>`:
-        '<div style="text-align:center;padding:32px;color:var(--bl);">Tafsir non disponible pour ce verset.</div>';
-    })
-    .catch(()=>{document.getElementById('taf-body').innerHTML='<div style="text-align:center;padding:32px;color:var(--bl);">Erreur de connexion</div>';});
-}
-
-// ── WORD POPUP ────────────────────────────────────────────────────────────
-function showWord(w,e){
-  e&&e.stopPropagation();haptic();
-  if(S.hz){
-    S.revWords.add(w);
-    document.querySelectorAll(`.verse-word[data-w="${CSS.escape(w)}"]`).forEach(el=>{el.style.filter='none';});
-    return;
-  }
-  document.getElementById('wp-ara').textContent=w;
-  document.getElementById('wp-tr').textContent='Appuyez sur ce mot dans l\'application pour voir sa traduction et racine';
-  document.getElementById('wp-root').textContent='';
-  document.getElementById('word-pop').style.display='block';
-}
-
-// ── TAB SWITCH ────────────────────────────────────────────────────────────
-function switchTab(t){
-  const c=document.getElementById('content');
-  c.classList.add('fading');
-  setTimeout(()=>{
-    S.tab=t;
-    ['home','quran','search','tools','bk'].forEach(id=>{
-      const el=document.getElementById('t-'+id);if(!el)return;
-      const ac=id===t;
-      el.style.color=ac?'var(--gold)':'var(--bl)';
-      el.style.borderTop=ac?'2px solid var(--gold)':'2px solid transparent';
-    });
-    const hdr=document.getElementById('hdr');
-    if((t!=='quran'||!S.ayahs.length)&&hdr){
-      hdr.innerHTML='<div style="font-size:17px;font-weight:700;color:var(--blue);">Al-Qurʾân</div><div style="font-size:10px;color:var(--bl);letter-spacing:1.2px;text-transform:uppercase;margin-top:1px;">Lecture & Méditation</div>';
-    }else if(S.ayahs.length&&hdr) updateHeaderForSurah(S.sn);
-    render();
-    c.classList.remove('fading');
-  },140);
-}
-
-// ── RENDER ────────────────────────────────────────────────────────────────
-function render(){
-  updPlayer();
-  const c=document.getElementById('content');if(!c)return;
-  const vdj=VDJ[new Date().getDate()%VDJ.length];
-  const st=S.stats;
-  const DAYS=['Lu','Ma','Me','Je','Ve','Sa','Di'];
-  const daysData=st.days&&st.days.length===7?st.days:[0,0,0,0,0,0,0];
-  const mx=Math.max(...daysData,1);
-  const lastR=lsg('q_last',null);
-  const lastSurah=lastR?SD.find(x=>x[0]===lastR.sn):null;
-
-  // ─ HOME ─
-  if(S.tab==='home'){
-    c.innerHTML=`<div style="padding:14px 14px 16px;">
-      <!-- Banner -->
-      <div style="background:linear-gradient(135deg,#2A1F0A,#1B2D5A);border-radius:16px;padding:16px 18px;margin-bottom:13px;position:relative;overflow:hidden;">
-        <div style="position:absolute;inset:0;opacity:.05;background:repeating-linear-gradient(60deg,#c9a84c 0,#c9a84c 1px,transparent 0,transparent 20px);background-size:20px 20px;"></div>
-        <div style="font-size:20px;font-weight:700;color:#F5EFE3;margin-bottom:2px;">Al-Qurʾân</div>
-        <div style="font-size:10px;color:rgba(201,168,76,.8);">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
-      </div>
-      <!-- Verset du jour -->
-      <div style="background:var(--bg2);border:1.5px solid var(--gb);border-left:4px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">✨ Verset du jour</div>
-        <div style="font-family:'Scheherazade New',serif;font-size:26px;color:var(--blue);direction:rtl;text-align:right;line-height:2;margin-bottom:10px;">${vdj.ar}</div>
-        <div style="font-size:14px;color:var(--bm);font-style:italic;line-height:1.75;margin-bottom:7px;">« ${vdj.fr} »</div>
-        <div style="font-size:11px;color:var(--bl);">${vdj.ref}</div>
-      </div>
-      <!-- Reprendre -->
-      ${lastSurah?`<div onclick="navTo(${lastSurah[0]})" style="padding:12px 15px;margin-bottom:12px;background:linear-gradient(135deg,#F0E8CC,#E6DABA);border-radius:12px;border:1px solid var(--gb);cursor:pointer;display:flex;align-items:center;gap:13px;">
-        <div style="width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">📍</div>
-        <div style="flex:1;">
-          <div style="font-size:10px;color:var(--bl);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Reprendre la lecture</div>
-          <div style="font-size:15px;font-weight:700;color:var(--brown);">${lastSurah[1]} — Verset ${lastR.vi+1}</div>
-        </div>
-        <div style="font-size:18px;color:var(--gold);">→</div>
-      </div>`:''}
-      <!-- Stats -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div style="background:var(--bg2);border-radius:12px;padding:13px 12px;border:1px solid var(--border);">
-          <div style="font-size:10px;color:var(--bl);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Cette semaine</div>
-          <div style="display:flex;align-items:flex-end;gap:3px;height:46px;">${DAYS.map((d,i)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;"><div style="width:100%;height:${Math.round((daysData[i]/mx)*40)+3}px;background:${daysData[i]>0?'var(--gold)':'var(--border)'};border-radius:3px 3px 0 0;"></div><div style="font-size:8px;color:var(--bl);">${d}</div></div>`).join('')}</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:12px;padding:13px 12px;border:1px solid var(--border);">
-          <div style="font-size:10px;color:var(--bl);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Ma progression</div>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;">
-            <div style="font-size:26px;font-weight:700;color:var(--gold);">${st.streak||0}</div>
-            <div style="font-size:11px;color:var(--bm);line-height:1.35;">jours<br>consécutifs 🔥</div>
+/* ── MATHURAT CARD ── */
+const MathuratCard=({item,showPh,showFr})=>{
+  const [open,setOpen]=useState(false);
+  return(
+    <div className="mc" style={{boxShadow:open?`0 3px 16px ${C.gb}`:'none'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',cursor:'pointer',gap:8}} onClick={()=>setOpen(v=>!v)}>
+        <div style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0}}>
+          <div style={{width:32,height:32,flexShrink:0,clipPath:'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)',background:open?C.gold:'#E4D9C4',color:open?'white':C.bm,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,fontFamily:UI,transition:'background .2s'}}>{item.n}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:600,color:open?C.gold:C.brown}}>{item.cat}</div>
+            {item.note&&<div style={{fontSize:10,color:'#9D174D',marginTop:2}}>⚠️ {item.note}</div>}
           </div>
-          <div style="font-size:10px;color:var(--bl);">${st.total||0} versets lus · ${S.bk.length} signet(s)</div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+          {item.reps>1&&<div style={{background:C.gf,border:`1px solid ${C.gb}`,borderRadius:12,padding:'2px 8px',fontSize:11,color:C.gold,fontWeight:700}}>×{item.reps}</div>}
+          <div style={{fontSize:14,color:C.bl,transition:'transform .2s',transform:open?'rotate(180deg)':'none'}}>▾</div>
         </div>
       </div>
-      <!-- Surah list header -->
-      <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:8px;">Les 114 Sourates</div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-        <!-- Column headers -->
-        <div style="display:flex;padding:7px 14px;background:#EDE6D5;border-bottom:1.5px solid var(--bstr);">
-          <div style="width:36px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;text-align:center;">N°</div>
-          <div style="flex:1;padding:0 10px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;">Nom · Traduction</div>
-          <div style="min-width:65px;font-size:9px;color:var(--bl);font-weight:700;text-transform:uppercase;text-align:center;">Arabe</div>
-        </div>
-        ${SD.map(s=>surahRow(s)).join('')}
-      </div>
-    </div>`;
-
-  // ─ QURAN ─
-  }else if(S.tab==='quran'){
-    if(S.loading){
-      c.innerHTML='<div style="text-align:center;padding:80px 20px;"><div style="width:28px;height:28px;border:2px solid var(--border);border-top:2px solid var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;"></div><div style="font-size:12px;color:var(--bl);">Chargement de la sourate…</div></div>';
-      return;
-    }
-    if(!S.ayahs.length){
-      c.innerHTML=`<div style="text-align:center;padding:50px 20px;"><div style="font-size:15px;font-weight:600;color:var(--brown);margin-bottom:8px;">Choisissez une sourate</div><div style="font-size:13px;color:var(--bl);margin-bottom:20px;">Depuis la page Accueil ou le menu ☰</div><button onclick="switchTab('home')" style="padding:12px 24px;background:var(--gold);border:none;border-radius:10px;color:white;font-size:14px;font-weight:600;">Voir les sourates →</button></div>`;
-      return;
-    }
-    const s=SD.find(x=>x[0]===S.sn);
-    // Basmala (sauf At-Tawbah)
-    const basmala=S.sn!==9?`<div style="text-align:center;padding:18px 16px 6px;font-family:'Scheherazade New',serif;font-size:26px;color:var(--blue);direction:rtl;line-height:2;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`:'';
-    const hifzNote=S.hz?`<div style="margin:8px 10px 2px;padding:9px 13px;background:#FFF8E8;border:1px solid var(--gb);border-radius:8px;font-size:12px;color:var(--bm);">🎓 Mode mémorisation actif — Tapez sur un mot pour le révéler un par un</div>`:'';
-    c.innerHTML=basmala+hifzNote+S.ayahs.map((ay,idx)=>{
-      const fr=S.frV[idx];const ac=idx===S.vi;
-      const bkd=S.bk.some(b=>b.key===`${S.sn}:${idx+1}`);
-      const done=S.versesDone.has(idx);
-      const words=(ay.text||'').split(' ').filter(w=>w);
-      const arabicHtml=words.map(w=>{
-        const safe=w.replace(/'/g,"\\'").replace(/"/g,'&quot;');
-        const hidden=S.hz&&!ac&&!S.revWords.has(w);
-        return `<span class="verse-word" data-w="${w.replace(/"/g,'&quot;')}" onclick="showWord('${safe}',event)" style="${hidden?'filter:blur(5px);':''}">${w} </span>`;
-      }).join('');
-      // Hizb separator every 60 verses
-      const hizb=idx>0&&idx%60===0?`<div style="font-size:10px;color:var(--gold);text-align:center;padding:6px 0;letter-spacing:1.5px;opacity:.7;">— Hizb ${Math.ceil(idx/60)} —</div>`:'';
-      return `${hizb}<div data-vi="${idx}" onclick="playAt(${idx})" style="margin:7px 10px;padding:16px 15px;background:${ac?'#FAF5E8':'var(--bg2)'};border:1.5px solid ${ac?'var(--gold)':'var(--border)'};border-left:5px solid ${ac?'var(--gold)':'transparent'};border-radius:12px;cursor:pointer;animation:fadeUp .2s;box-shadow:${ac?'0 3px 16px var(--gb)':'0 1px 4px var(--shadow)'};transition:all .2s;position:relative;">
-        ${done&&!ac?`<div style="position:absolute;top:10px;right:12px;font-size:13px;animation:vcheck .3s ease;opacity:.45;color:var(--green);">✓</div>`:''}
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
-          <div style="width:32px;height:32px;flex-shrink:0;clip-path:polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%);background:${ac?'var(--gold)':'#E4D9C4'};color:${ac?'white':'var(--bm)'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">${ay.numberInSurah}</div>
-          <div style="flex:1;"></div>
-          <button onclick="openTafsir(${idx},event)" style="border:1px solid var(--border);border-radius:6px;color:var(--bm);padding:4px 10px;font-size:11px;background:none;font-weight:500;">📚 Tafsir</button>
-          <button onclick="toggleBk(${S.sn},${idx},event)" style="background:none;border:none;font-size:16px;opacity:${bkd?1:.25};color:var(--gold);">🔖</button>
-          <button onclick="event.stopPropagation();playAt(${idx})" style="width:30px;height:30px;border-radius:50%;background:${ac&&S.playing?'var(--gold)':'var(--gf)'};color:${ac&&S.playing?'white':'var(--gold)'};border:none;font-size:12px;display:flex;align-items:center;justify-content:center;${ac&&S.playing?'animation:pulse 1.5s ease infinite;':''}">${ac&&S.playing?'⏸':'▶'}</button>
-        </div>
-        <div dir="rtl" style="font-family:'Scheherazade New',serif;font-size:${S.fs}px;line-height:2.2;color:var(--blue);text-align:right;${S.showFr&&fr?'margin-bottom:13px;':''}">${arabicHtml}</div>
-        ${S.showFr&&fr?`<div style="font-size:14px;color:var(--bm);line-height:1.82;border-top:1px solid var(--border);padding-top:10px;font-style:italic;">${fr.text}</div>`:''}
-      </div>`;
-    }).join('');
-
-  // ─ SEARCH ─
-  }else if(S.tab==='search'){
-    const ready=!!S.allFr;
-    c.innerHTML=`<div style="padding:14px;">
-      <div style="font-size:13px;color:var(--bl);margin-bottom:10px;">${ready?'Recherche dans les <strong>6 236 versets</strong> du Coran':'Chargement du Coran en arrière-plan…'}</div>
-      ${!ready?`<div style="padding:8px 12px;background:#FFFBEE;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--bm);margin-bottom:10px;display:flex;align-items:center;gap:8px;"><span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span> Chargement en cours — lancez une recherche après quelques secondes</div>`:''}
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <input id="sq" placeholder="Ex: miséricordieux, paradis, patience…" style="flex:1;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;color:var(--brown);font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')doSearch()">
-        <button onclick="doSearch()" style="padding:11px 18px;background:var(--gold);border:none;border-radius:10px;color:white;font-size:14px;font-weight:700;">→</button>
-      </div>
-      <div id="sr"></div>
-    </div>`;
-
-  // ─ TOOLS ─
-  }else if(S.tab==='tools'){
-    const dayIdx=new Date().getDate()%30;
-    c.innerHTML=`<div style="padding:14px;">
-      <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:12px;">🤲 Compteur de Dhikr</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;">
-        ${DHIKR_DATA.map(([fr2,desc,col,t],i)=>{
-          const p=Math.min(dc[i]/t,1);
-          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 11px;text-align:center;">
-            <div style="font-size:13px;font-weight:700;color:${col};margin-bottom:3px;">${fr2}</div>
-            <div style="font-size:10px;color:var(--bl);margin-bottom:9px;">${desc}</div>
-            <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:9px;overflow:hidden;"><div style="height:100%;background:${col};width:${p*100}%;transition:width .3s;"></div></div>
-            <div style="font-size:22px;font-weight:700;color:${col};margin-bottom:8px;">${dc[i]}<span style="font-size:11px;color:var(--bl);font-weight:400;">/${t}</span></div>
-            <div style="display:flex;gap:5px;justify-content:center;">
-              <button onclick="dc[${i}]=Math.max(0,dc[${i}]-1);haptic();render()" style="width:29px;height:29px;border:1px solid var(--border);border-radius:50%;background:none;font-size:15px;color:var(--bl);">−</button>
-              <button onclick="dc[${i}]=Math.min(dc[${i}]+1,${t});haptic();render()" style="width:29px;height:29px;background:${col};border:none;border-radius:50%;font-size:15px;color:white;font-weight:700;">+</button>
-              <button onclick="dc[${i}]=0;render()" style="width:29px;height:29px;border:1px solid var(--border);border-radius:50%;background:none;font-size:10px;color:var(--bl);">↺</button>
+      {open&&(
+        <div style={{padding:'0 14px 14px',animation:'slideDown .2s ease'}}>
+          <div style={{background:'#FAF6EC',borderRadius:10,padding:'16px 14px',marginBottom:(showPh||showFr)?12:0,border:`1px solid ${C.border}`}}>
+            <div dir="rtl" style={{fontFamily:ARA,fontSize:26,color:C.blue,textAlign:'right',lineHeight:2.2}}>{item.ar}</div>
+          </div>
+          {showPh&&(
+            <div style={{padding:'10px 12px',background:'rgba(27,45,90,.04)',borderRadius:8,border:`1px solid ${C.border}`,marginBottom:showFr?10:0}}>
+              <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Phonétique</div>
+              <div style={{fontSize:13,color:C.blue,lineHeight:1.75,fontStyle:'italic'}}>{item.ph}</div>
             </div>
-            ${dc[i]>=t?`<div style="font-size:11px;color:var(--green);margin-top:6px;font-weight:700;">✓ Complété !</div>`:''}
-          </div>`;
-        }).join('')}
-      </div>
-      <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:10px;">📅 Plan Khatma — 30 jours</div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;">
-        <div style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--bl);">
-          Aujourd'hui · Jour <strong style="color:var(--brown);">${dayIdx+1}</strong> : ${PLAN30[dayIdx]}
+          )}
+          {showFr&&(
+            <div style={{padding:'10px 12px',background:C.gf,borderRadius:8,border:`1px solid ${C.gb}`}}>
+              <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Traduction française</div>
+              <div style={{fontSize:13,color:C.bm,lineHeight:1.8,fontStyle:'italic'}}>{item.fr}</div>
+            </div>
+          )}
         </div>
-        ${PLAN30.map((p,i)=>{const done=i<dayIdx;const cur=i===dayIdx;return `<div style="padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(221,209,187,.4);background:${cur?'var(--gf)':'transparent'};">
-          <div style="width:22px;height:22px;border-radius:50%;background:${done?'var(--green)':cur?'var(--gold)':'#E4D9C4'};color:${done||cur?'white':'var(--bl)'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;">${done?'✓':i+1}</div>
-          <div style="flex:1;font-size:12px;color:${cur?'var(--brown)':'var(--bl)'};">${p}</div>
-          ${cur?`<div style="font-size:10px;color:var(--gold);font-weight:700;">Auj.</div>`:''}
-        </div>`;}).join('')}
-      </div>
-    </div>`;
+      )}
+    </div>
+  );
+};
 
-  // ─ BOOKMARKS ─
-  }else if(S.tab==='bk'){
-    if(!S.bk.length){
-      c.innerHTML='<div style="text-align:center;padding:72px 20px;"><div style="font-size:50px;margin-bottom:14px;">🔖</div><div style="font-size:18px;color:var(--brown);font-weight:700;margin-bottom:8px;">Aucun signet</div><div style="font-size:14px;color:var(--bl);">Appuyez sur 🔖 dans un verset pour le sauvegarder</div></div>';
-    }else{
-      c.innerHTML=`<div style="padding:12px;"><div style="font-size:12px;color:var(--bl);margin-bottom:12px;">${S.bk.length} signet(s) enregistré(s) sur cet appareil</div>${S.bk.map(b=>`<div onclick="navTo(${b.sn})" style="padding:14px;margin-bottom:9px;background:var(--bg2);border:1.5px solid var(--border);border-left:4px solid var(--gold);border-radius:12px;cursor:pointer;box-shadow:0 1px 4px var(--shadow);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-          <div><div style="font-size:13px;font-weight:700;color:var(--gold);">${b.en} — Verset ${b.vi+1}</div><div style="font-size:11px;color:var(--bl);margin-top:2px;">${b.fr}</div></div>
-          <button onclick="rmBk('${b.key}',event)" style="border:1px solid #FECACA;border-radius:6px;color:#DC2626;padding:3px 9px;font-size:11px;background:none;flex-shrink:0;margin-left:8px;">Retirer</button>
+/* ── MATHURAT PAGE READER ── */
+const MathuratReader=({showPh,showFr,onBack})=>{
+  const [idx,setIdx]=useState(-1); // -1 = intro page
+  const item=idx>=0?MATH[idx]:null;
+  const total=MATH.length;
+  const goNext=()=>setIdx(i=>Math.min(i+1,total-1));
+  const goPrev=()=>setIdx(i=>Math.max(i-1,-1));
+
+  // Touch/swipe support
+  const touchX=useRef(null);
+  const onTouchStart=e=>{touchX.current=e.touches[0].clientX;};
+  const onTouchEnd=e=>{
+    if(touchX.current===null)return;
+    const dx=touchX.current-e.changedTouches[0].clientX;
+    if(Math.abs(dx)>50){if(dx>0)goNext();else goPrev();}
+    touchX.current=null;
+  };
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {/* Top bar */}
+      <div style={{padding:'10px 14px',borderBottom:`1px solid ${C.border}`,background:C.bg2,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button onClick={onBack} style={{background:'none',border:'none',color:C.bm,fontSize:13,cursor:'pointer',padding:'4px 8px',borderRadius:6,display:'flex',alignItems:'center',gap:5}}>
+          ← Retour
+        </button>
+        <div style={{fontSize:13,fontWeight:700,color:C.brown}}>{idx===-1?'Introduction':`${idx+1} / ${total}`}</div>
+        <div style={{display:'flex',gap:6,alignItems:'center'}}>
+          <div style={{fontSize:10,color:showPh?C.gold:C.bl}}>Ph</div>
+          <div style={{fontSize:10,color:showFr?C.gold:C.bl}}>FR</div>
         </div>
-        <div style="font-size:13px;color:var(--bl);font-style:italic;line-height:1.65;">${b.frPrev}…</div>
-      </div>`).join('')}</div>`;
-    }
+      </div>
+
+      {/* Progress bar */}
+      {idx>=0&&<div style={{height:2,background:C.border,flexShrink:0}}>
+        <div style={{height:'100%',background:C.gold,width:`${((idx+1)/total)*100}%`,transition:'width .3s ease',borderRadius:'0 2px 2px 0'}}/>
+      </div>}
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:'auto',padding:'20px 16px 16px'}}>
+        {idx===-1?(
+          /* INTRO PAGE */
+          <div style={{animation:'fadeUp .3s ease'}}>
+            <div style={{textAlign:'center',marginBottom:20}}>
+              <div style={{fontFamily:ARA,fontSize:32,color:C.blue,direction:'rtl',marginBottom:8,lineHeight:1.8}}>الْمَأْثُورَاتُ</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.brown,marginBottom:4}}>Al-Ma'thurât Sughrâ</div>
+              <div style={{fontSize:12,color:C.bl}}>{total} invocations · Matin & Soir</div>
+            </div>
+            <div style={{background:'#FAF6EC',border:`1px solid ${C.border}`,borderRadius:14,padding:18,lineHeight:1.85,fontSize:13.5,color:C.bm}}>
+              <p style={{marginBottom:14}}>Al-Ma'thurat est un recueil d'invocations authentiques issues du Coran et de la Sunna. Il réunit des adhkâr soigneusement transmis, à réciter quotidiennement, en particulier le matin et le soir, afin de garder le cœur attaché au rappel d'Allah.</p>
+              <p style={{marginBottom:14}}>Sa récitation régulière est une source de grands bienfaits : elle fortifie la foi, apaise le cœur, protège le croyant et l'aide à traverser sa journée avec plus de sérénité, de confiance et de présence spirituelle.</p>
+              <p>Faire de Al-Ma'thurat une habitude quotidienne, c'est offrir à son âme un rendez-vous constant avec Allah : un moment simple, profond et précieux, qui illumine la journée et nourrit la constance dans l'adoration.</p>
+            </div>
+            <button onClick={goNext} style={{display:'block',width:'100%',marginTop:20,padding:'14px',background:C.gold,border:'none',borderRadius:12,color:'white',fontSize:15,fontWeight:700,cursor:'pointer',letterSpacing:.3}}>
+              Commencer →
+            </button>
+          </div>
+        ):(
+          /* INVOCATION PAGE */
+          <div style={{animation:'fadeUp .25s ease'}}>
+            {/* Category label */}
+            <div style={{textAlign:'center',marginBottom:16}}>
+              <span style={{background:C.gf,border:`1px solid ${C.gb}`,borderRadius:20,padding:'4px 14px',fontSize:12,color:C.gold,fontWeight:700}}>
+                {item.cat}
+              </span>
+              {item.reps>1&&<span style={{marginLeft:8,background:'#F0E8D0',border:`1px solid ${C.border}`,borderRadius:20,padding:'4px 10px',fontSize:11,color:C.bm}}>× {item.reps} fois</span>}
+              {item.note&&<div style={{marginTop:8,fontSize:11,color:'#9D174D',fontWeight:600}}>⚠️ {item.note}</div>}
+            </div>
+
+            {/* Arabic text */}
+            <div style={{background:'#FAF6EC',border:`1px solid ${C.border}`,borderRadius:14,padding:'20px 16px',marginBottom:14,boxShadow:`0 2px 12px ${C.shadow}`}}>
+              <div dir="rtl" style={{fontFamily:ARA,fontSize:26,color:C.blue,textAlign:'right',lineHeight:2.3,direction:'rtl'}}>
+                {item.ar}
+              </div>
+            </div>
+
+            {/* Phonetic */}
+            {showPh&&(
+              <div style={{background:'rgba(27,45,90,.04)',border:`1px solid ${C.border}`,borderRadius:12,padding:'14px 16px',marginBottom:12,animation:'fadeUp .2s ease'}}>
+                <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Phonétique</div>
+                <div style={{fontSize:14,color:C.blue,lineHeight:1.85,fontStyle:'italic'}}>{item.ph}</div>
+              </div>
+            )}
+
+            {/* French translation */}
+            {showFr&&(
+              <div style={{background:C.gf,border:`1px solid ${C.gb}`,borderRadius:12,padding:'14px 16px',animation:'fadeUp .2s ease'}}>
+                <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Traduction française</div>
+                <div style={{fontSize:14,color:C.bm,lineHeight:1.85,fontStyle:'italic'}}>{item.fr}</div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div style={{padding:'12px 16px',borderTop:`1px solid ${C.border}`,background:C.bg2,flexShrink:0,display:'flex',alignItems:'center',gap:12}}>
+        <button onClick={goPrev} disabled={idx===-1} style={{width:44,height:44,borderRadius:'50%',border:`1.5px solid ${idx===-1?C.border:C.gold}`,background:idx===-1?'none':C.gf,color:idx===-1?C.border:C.gold,fontSize:18,cursor:idx===-1?'not-allowed':'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s'}}>‹</button>
+
+        {/* Dot indicators (compact) */}
+        <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:4,overflowX:'hidden'}}>
+          {idx===-1?(
+            <div style={{fontSize:12,color:C.bl}}>Glissez ou utilisez les flèches</div>
+          ):(
+            <>
+              <div style={{fontSize:12,color:C.bl,marginRight:6}}>{idx+1}</div>
+              <div style={{flex:1,height:4,background:C.border,borderRadius:2,overflow:'hidden',maxWidth:200}}>
+                <div style={{height:'100%',background:C.gold,width:`${((idx+1)/total)*100}%`,transition:'width .3s ease'}}/>
+              </div>
+              <div style={{fontSize:12,color:C.bl,marginLeft:6}}>{total}</div>
+            </>
+          )}
+        </div>
+
+        <button onClick={goNext} disabled={idx===total-1} style={{width:44,height:44,borderRadius:'50%',border:`1.5px solid ${idx===total-1?C.border:C.gold}`,background:idx===total-1?'none':C.gold,color:idx===total-1?C.border:'white',fontSize:18,cursor:idx===total-1?'not-allowed':'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',boxShadow:idx===total-1?'none':`0 2px 10px ${C.gb}`}}>›</button>
+      </div>
+    </div>
+  );
+};
+
+/* ── DHIKR TAB ── */
+const DhikrTab=({dc,setDc})=>{
+  const [sub,setSub]=useState('counter');
+  const [showPh,setSP]=useState(false);
+  const [showFr,setSF]=useState(true);
+  const [reading,setReading]=useState(false);
+
+  if(sub==='math'&&reading){
+    return <MathuratReader showPh={showPh} showFr={showFr} onBack={()=>setReading(false)}/>;
   }
-  updBadge();
-}
 
-// ── SEARCH ────────────────────────────────────────────────────────────────
-function doSearch(){
-  const q=(document.getElementById('sq')?.value||'').toLowerCase().trim();
-  const sr=document.getElementById('sr');if(!q||!sr)return;
-  const src=S.allFr||(S.frV.map((v,i)=>({...v,surah:S.sn})));
-  const res=src.filter(v=>v.text.toLowerCase().includes(q)).slice(0,100);
-  if(!res.length){sr.innerHTML='<div style="color:var(--bl);font-size:13px;text-align:center;padding:24px;">Aucun résultat trouvé</div>';return;}
-  sr.innerHTML=`<div style="font-size:12px;color:var(--bl);margin-bottom:10px;">${res.length} résultat(s)${S.allFr?' dans tout le Coran':' dans la sourate chargée'}</div>`+
-    res.map(v=>{
-      const s=SD.find(x=>x[0]===v.surah);
-      return `<div onclick="navTo(${v.surah});setTimeout(()=>playAt(${(v.numberInSurah||1)-1}),600)" style="padding:11px 13px;margin-bottom:7px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer;box-shadow:0 1px 3px var(--shadow);">
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-          <div style="font-size:11px;color:var(--gold);font-weight:700;">${s?.[1]||''} — V.${v.numberInSurah}</div>
-          <div style="font-family:'Scheherazade New',serif;font-size:14px;color:var(--blue);direction:rtl;">${s?.[5]||''}</div>
+  return(
+    <div style={{display:'flex',flexDirection:'column',flex:1,minHeight:0}}>
+      <div style={{display:'flex',background:C.bg2,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+        <button className={`dsub ${sub==='counter'?'on':'off'}`} onClick={()=>setSub('counter')}>📿 Compteur</button>
+        <button className={`dsub ${sub==='math'?'on':'off'}`} onClick={()=>setSub('math')}>🌙 Al-Ma'thurât</button>
+      </div>
+
+      {sub==='counter'&&(
+        <div style={{padding:14,overflowY:'auto',flex:1}}>
+          <div style={{fontSize:12,color:C.bl,marginBottom:14,lineHeight:1.7}}>Compteur de tasbih pour vos formules de dhikr après la prière ou à tout moment.</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            {DHIKR.map(([name,desc,col,t],i)=>{const p=Math.min(dc[i]/t,1);return(
+              <div key={name} style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,padding:'14px 11px',textAlign:'center'}}>
+                <div style={{fontSize:14,fontWeight:700,color:col,marginBottom:3}}>{name}</div>
+                <div style={{fontSize:10,color:C.bl,marginBottom:9}}>{desc}</div>
+                <div style={{height:4,background:C.border,borderRadius:2,marginBottom:9,overflow:'hidden'}}><div style={{height:'100%',background:col,width:`${p*100}%`,transition:'width .3s'}}/></div>
+                <div style={{fontSize:24,fontWeight:700,color:col,marginBottom:8}}>{dc[i]}<span style={{fontSize:12,color:C.bl,fontWeight:400}}>/{t}</span></div>
+                <div style={{display:'flex',gap:5,justifyContent:'center'}}>
+                  <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=Math.max(0,n[i]-1);return n;})} style={{width:30,height:30,border:`1px solid ${C.border}`,borderRadius:'50%',background:'none',fontSize:16,color:C.bl,cursor:'pointer'}}>−</button>
+                  <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=Math.min(n[i]+1,t);return n;})} style={{width:30,height:30,background:col,border:'none',borderRadius:'50%',fontSize:16,color:'white',fontWeight:700,cursor:'pointer'}}>+</button>
+                  <button onClick={()=>setDc(prev=>{const n=[...prev];n[i]=0;return n;})} style={{width:30,height:30,border:`1px solid ${C.border}`,borderRadius:'50%',background:'none',fontSize:11,color:C.bl,cursor:'pointer'}}>↺</button>
+                </div>
+                {dc[i]>=t&&<div style={{fontSize:11,color:C.green,marginTop:5,fontWeight:700}}>✓ Complété !</div>}
+              </div>
+            );})}
+          </div>
         </div>
-        <div style="font-size:13px;color:var(--bm);line-height:1.75;font-style:italic;">${v.text.replace(new RegExp(q,'gi'),m=>`<mark style="background:#FFF3C4;color:var(--gold);border-radius:2px;padding:0 1px;">${m}</mark>`)}</div>
-      </div>`;
-    }).join('');
+      )}
+
+      {sub==='math'&&(
+        <div style={{flex:1,overflowY:'auto',padding:16}}>
+          {/* Options */}
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            <div style={{display:'flex',alignItems:'center',gap:7,padding:'7px 13px',background:showPh?C.gf:C.bg2,border:`1px solid ${showPh?C.gold:C.border}`,borderRadius:20,cursor:'pointer',flex:1,justifyContent:'center'}} onClick={()=>setSP(v=>!v)}>
+              <Toggle on={showPh} onToggle={()=>setSP(v=>!v)}/>
+              <span style={{fontSize:12,color:showPh?C.gold:C.bm,fontWeight:showPh?600:400}}>Phonétique</span>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:7,padding:'7px 13px',background:showFr?C.gf:C.bg2,border:`1px solid ${showFr?C.gold:C.border}`,borderRadius:20,cursor:'pointer',flex:1,justifyContent:'center'}} onClick={()=>setSF(v=>!v)}>
+              <Toggle on={showFr} onToggle={()=>setSF(v=>!v)}/>
+              <span style={{fontSize:12,color:showFr?C.gold:C.bm,fontWeight:showFr?600:400}}>Traduction 🇫🇷</span>
+            </div>
+          </div>
+
+          {/* Entry card */}
+          <div style={{background:'linear-gradient(135deg,#2A1F0A,#1B2D5A)',borderRadius:16,padding:'24px 20px',marginBottom:16,textAlign:'center',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',inset:0,opacity:.06,backgroundImage:'repeating-linear-gradient(60deg,#c9a84c 0,#c9a84c 1px,transparent 0,transparent 18px)',backgroundSize:'18px 18px'}}/>
+            <div style={{fontFamily:ARA,fontSize:28,color:'#F5EFE3',direction:'rtl',lineHeight:1.8,marginBottom:10}}>الْمَأْثُورَاتُ</div>
+            <div style={{fontSize:16,fontWeight:700,color:'#F5EFE3',marginBottom:4}}>Al-Ma'thurât Sughrâ</div>
+            <div style={{fontSize:11,color:'rgba(201,168,76,.8)',marginBottom:18}}>{MATH.length} invocations · Matin & Soir</div>
+            <button onClick={()=>setReading(true)} style={{padding:'12px 28px',background:C.gold,border:'none',borderRadius:10,color:'white',fontSize:14,fontWeight:700,cursor:'pointer',letterSpacing:.3}}>
+              Commencer la lecture →
+            </button>
+          </div>
+
+          {/* Preview list */}
+          <div style={{fontSize:12,color:C.bl,marginBottom:10,fontWeight:600,letterSpacing:.5,textTransform:'uppercase'}}>Aperçu des invocations</div>
+          {MATH.map((item,i)=>(
+            <div key={item.n} onClick={()=>{setReading(true);}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,marginBottom:7,cursor:'pointer',transition:'background .12s'}}
+              onMouseOver={e=>e.currentTarget.style.background='rgba(138,105,16,.06)'} onMouseOut={e=>e.currentTarget.style.background=C.bg2}>
+              <div style={{width:28,height:28,flexShrink:0,clipPath:'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)',background:'#E4D9C4',color:C.bm,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700}}>{item.n}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:600,color:C.brown,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.cat}</div>
+                {item.reps>1&&<div style={{fontSize:10,color:C.bl,marginTop:1}}>× {item.reps} fois</div>}
+              </div>
+              <div style={{fontFamily:ARA,fontSize:16,color:C.blue,direction:'rtl',flexShrink:0,maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.ar.slice(0,12)}…</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════ */
+function AnwarApp(){
+  const [tab,setTab]=useState('home');
+  const [sbo,setSBO]=useState(false);
+  const [sett,setSett]=useState(false);
+  const [sbm,setSbm]=useState('s');
+  const [sbq,setSbq]=useState('');
+  const [infos,setInfos]=useState(null);
+  const [taf,setTaf]=useState(null);
+  const [tafLang,setTafLang]=useState('fr');
+  const [wp,setWp]=useState(null);
+  const [sn,setSn]=useState(1);
+  const [ayahs,setAyahs]=useState([]);
+  const [frV,setFrV]=useState([]);
+  const [tjA,setTjA]=useState([]);
+  const [loading,setLoading]=useState(false);
+  const [allFr,setAllFr]=useState(null);
+  const [allFrL,setAllFrL]=useState(false);
+  const [rec,setRec]=useState('ar.alafasy');
+  const [fs,setFs]=useState(28);
+  const [spd,setSpd]=useState(1);
+  const [showFr,setShowFr]=useState(true);
+  const [tj,setTj]=useState(true);
+  const [ao,setAO]=useState(false);
+  const [pm,setPM]=useState(false);
+  const [hz,setHz]=useState(false);
+  const [vi,setVi]=useState(0);
+  const [playing,setPlaying]=useState(false);
+  const [repeat,setRepeat]=useState('none');
+  const [prog,setProg]=useState(0);
+  const [vd,setVD]=useState(new Set());
+  const [rw,setRW]=useState(new Set());
+  const [bk,setBk]=useState([]);
+  const [dc,setDc]=useState([0,0,0,0]);
+  const [toast,setToast]=useState('');
+  const [toastT,setTT]=useState(null);
+  const [sq,setSq]=useState('');
+  const [sr,setSr]=useState(null);
+  const aref=useRef(null);
+  const vref=useRef({});
+
+  useEffect(()=>{if(!document.getElementById('anwar-css')){const s=document.createElement('style');s.id='anwar-css';s.textContent=GCSS;document.head.appendChild(s);}},[]);
+
+  const showToast=useCallback((msg)=>{setToast(msg);clearTimeout(toastT);setTT(setTimeout(()=>setToast(''),2600));},[toastT]);
+
+  useEffect(()=>{
+    const a=aref.current;if(!a)return;
+    const onE=()=>{if(repeat==='verse'){a.play().catch(()=>{});return;}setVD(p=>new Set([...p,vi]));const nx=vi+1;if(nx<ayahs.length)playAt(nx);else if(repeat==='surah')playAt(0);else setPlaying(false);};
+    const onTU=()=>{if(a.duration>0)setProg(a.currentTime/a.duration);};
+    a.addEventListener('ended',onE);a.addEventListener('timeupdate',onTU);
+    a.addEventListener('play',()=>setPlaying(true));a.addEventListener('pause',()=>setPlaying(false));
+    return()=>{a.removeEventListener('ended',onE);a.removeEventListener('timeupdate',onTU);a.removeEventListener('play',()=>setPlaying(true));a.removeEventListener('pause',()=>setPlaying(false));};
+  },[repeat,vi,ayahs.length]);
+
+  const loadSurah=useCallback((n)=>{
+    setLoading(true);setAyahs([]);setFrV([]);setTjA([]);setVi(0);setPlaying(false);setVD(new Set());setRW(new Set());
+    if(aref.current)aref.current.src='';
+    Promise.all([
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-tajweed,fr.hamidullah`).then(r=>r.json()).catch(()=>null),
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/quran-uthmani`).then(r=>r.json()).catch(()=>null),
+    ]).then(([tjRes,utRes])=>{
+      let main=[],fr=[],tj2=[];
+      if(tjRes?.code===200&&Array.isArray(tjRes.data)&&tjRes.data.length>=2){const s=tjRes.data[0]?.ayahs[0]?.text||'';if(s.includes('<span'))tj2=tjRes.data[0].ayahs;fr=tjRes.data[1]?.ayahs||[];}
+      main=utRes?.code===200?utRes.data?.ayahs||[]:tjRes?.data?.[0]?.ayahs?.map(a=>({...a,text:a.text.replace(/\[[^\]]*\]/g,'').replace(/\|/g,'').replace(/\s+/g,' ').trim()}))||[];
+      setAyahs(main);setFrV(fr);setTjA(tj2);setLoading(false);
+    });
+    if(!allFr&&!allFrL){setAllFrL(true);fetch('https://api.alquran.cloud/v1/quran/fr.hamidullah').then(r=>r.json()).then(({code,data})=>{if(code===200&&data?.surahs){const all=[];data.surahs.forEach(s=>s.ayahs.forEach(a=>all.push({...a,surah:s.number})));setAllFr(all);}setAllFrL(false);}).catch(()=>setAllFrL(false));}
+  },[allFr,allFrL]);
+
+  const navTo=useCallback((n)=>{setSn(n);setSBO(false);setTab('quran');loadSurah(n);},[loadSurah]);
+  useEffect(()=>{loadSurah(1);},[]);
+
+  const aURL=(n,i)=>{const o=OFFSETS[n];if(!o)return null;return`https://cdn.islamic.network/quran/audio/128/${rec}/${o+i}.mp3`;};
+  const playAt=useCallback((idx)=>{
+    if(idx<0||idx>=ayahs.length)return;setVi(idx);
+    const url=aURL(sn,idx);if(aref.current&&url){aref.current.src=url;aref.current.playbackRate=spd;aref.current.play().catch(()=>{});}
+    setTimeout(()=>vref.current[idx]?.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  },[sn,ayahs.length,rec,spd]);
+
+  const togglePlay=()=>{if(playing)aref.current?.pause();else{if(aref.current?.src)aref.current.play().catch(()=>{});else playAt(vi);}};
+
+  const openTafsir=(idx)=>{setTafLang('fr');setTaf({idx,loading:true,text:null,lang:'fr'});};
+  useEffect(()=>{
+    if(!taf?.loading)return;
+    if(taf.lang==='fr'){setTaf(p=>({...p,loading:false,text:'fr'}));return;}
+    fetch(`https://api.alquran.cloud/v1/ayah/${sn}:${taf.idx+1}/editions/en.ibnkathir`).then(r=>r.json()).then(({code,data})=>{setTaf(p=>({...p,loading:false,text:code===200&&Array.isArray(data)?data[0]?.text:null}));}).catch(()=>setTaf(p=>({...p,loading:false,text:null})));
+  },[taf?.loading,taf?.lang,sn]);
+
+  const toggleBk=(n,idx)=>{const key=`${n}:${idx+1}`;const s=SD.find(x=>x[0]===n);const ex=bk.some(b=>b.key===key);if(ex){setBk(p=>p.filter(b=>b.key!==key));showToast('Signet retiré');}else{setBk(p=>[...p,{key,sn:n,vi:idx,en:s?.[1]||'',fr:s?.[2]||'',frPrev:(frV[idx]?.text||'').slice(0,100)}]);showToast('🔖 Signet ajouté');}};
+  const doSearch=()=>{if(!sq.trim())return;const q2=sq.toLowerCase();const src=allFr||frV.map(v=>({...v,surah:sn}));setSr(src.filter(v=>v.text.toLowerCase().includes(q2)).slice(0,80));};
+
+  const curS=SD.find(x=>x[0]===sn);
+  const vdj=VDJ[new Date().getDate()%VDJ.length];
+  const hasTj=tjA.length>0;
+
+  const renderAra=(idx,fontSize,extra={})=>{
+    const ay=ayahs[idx];if(!ay)return null;
+    const tjAy=tjA[idx];const ac=idx===vi;
+    if(hasTj&&tj&&tjAy?.text?.includes('<span'))return <div className="tw" dir="rtl" dangerouslySetInnerHTML={{__html:tjAy.text}} style={{fontFamily:ARA,fontSize,lineHeight:2.15,color:C.blue,textAlign:'right',...extra}}/>;
+    return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.15,color:C.blue,textAlign:'right',...extra}}>
+      {(ay.text||'').split(' ').filter(Boolean).map((w,i)=>{const hidden=hz&&!ac&&!rw.has(w);return<span key={i} className="vword" style={{filter:hidden?'blur(5px)':undefined}} onClick={e=>{e.stopPropagation();if(hz)setRW(p=>new Set([...p,w]));else setWp({word:w});}}>{w} </span>;})}
+    </div>);
+  };
+
+  const renderPageMode=()=>(
+    <div style={{padding:'20px 18px',background:'#FAF6EC',minHeight:'100%'}}>
+      {sn!==9&&<div style={{textAlign:'center',fontFamily:ARA,fontSize:fs+6,color:C.blue,direction:'rtl',lineHeight:2.2,marginBottom:18,padding:14,borderTop:`2px solid ${C.gold}`,borderBottom:`2px solid ${C.gold}`}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>}
+      <div dir="rtl" style={{fontFamily:ARA,fontSize:fs+4,color:C.blue,textAlign:'justify',lineHeight:2.6,wordSpacing:4}}>
+        {ayahs.map((ay,idx)=>{const tjAy=tjA[idx];const numS=<span key={`n${idx}`} onClick={()=>playAt(idx)} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:28,height:28,borderRadius:'50%',background:C.gold,color:'white',fontSize:10,fontWeight:700,fontFamily:UI,verticalAlign:'middle',margin:'0 4px',cursor:'pointer'}}>{ay.numberInSurah}</span>;if(hasTj&&tj&&tjAy?.text?.includes('<span'))return<span key={idx}><span className="tw" dangerouslySetInnerHTML={{__html:tjAy.text}}/>{numS}</span>;return<span key={idx}>{ay.text} {numS}</span>;})}
+      </div>
+      {!ao&&showFr&&frV.length>0&&<div style={{marginTop:28,borderTop:`2px solid ${C.border}`,paddingTop:18}}><div style={{fontSize:10,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12,textAlign:'center',fontWeight:700}}>Traduction — {curS?.[1]||''}</div>{frV.map((v,i)=><p key={i} style={{fontSize:14,color:C.bm,lineHeight:1.85,marginBottom:10,fontStyle:'italic'}}><span style={{fontSize:11,color:C.bl,fontWeight:700,marginRight:4}}>[{i+1}]</span>{v.text}</p>)}</div>}
+      <div style={{padding:14,display:'flex',gap:10,justifyContent:'center'}}>
+        <button onClick={()=>playAt(0)} style={{padding:'8px 18px',background:C.gold,border:'none',borderRadius:8,color:'white',fontSize:13,fontWeight:600,cursor:'pointer'}}>▶ Lire</button>
+        <button onClick={()=>setPM(false)} style={{padding:'8px 14px',border:`1px solid ${C.border}`,borderRadius:8,background:'none',color:C.bm,fontSize:13,cursor:'pointer'}}>Mode cartes</button>
+      </div>
+    </div>
+  );
+
+  const renderCards=()=>(
+    <div style={{padding:'8px 0'}}>
+      {hz&&<div style={{margin:'8px 10px 2px',padding:'9px 13px',background:'#FFF8E8',border:`1px solid ${C.gb}`,borderRadius:8,fontSize:12,color:C.bm}}>🎓 Mode mémorisation — tapez sur un mot pour révéler</div>}
+      {hasTj&&tj&&<div style={{margin:'6px 10px 2px',padding:'7px 12px',background:'#EFF6FF',border:'1px solid rgba(59,130,246,.2)',borderRadius:8,fontSize:11,color:'#1D4ED8'}}>🎨 Tajweed coloré actif</div>}
+      {sn!==9&&<div style={{textAlign:'center',padding:16,fontFamily:ARA,fontSize:fs,color:C.blue,direction:'rtl',lineHeight:2}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>}
+      {ayahs.map((ay,idx)=>{
+        const fr=frV[idx];const ac=idx===vi;const bkd=bk.some(b=>b.key===`${sn}:${idx+1}`);const done=vd.has(idx);
+        return(
+          <div key={idx} ref={el=>vref.current[idx]=el} onClick={()=>playAt(idx)}
+            style={{margin:'7px 10px',padding:'16px 15px',background:ac?'#FAF5E8':C.bg2,border:`1.5px solid ${ac?C.gold:C.border}`,borderLeft:`5px solid ${ac?C.gold:'transparent'}`,borderRadius:12,cursor:'pointer',animation:'fadeUp .2s',boxShadow:ac?`0 3px 16px ${C.gb}`:`0 1px 4px ${C.shadow}`,transition:'all .2s',position:'relative',fontFamily:UI}}>
+            {done&&!ac&&<div style={{position:'absolute',top:10,right:12,fontSize:13,animation:'vcheck .3s',opacity:.45,color:C.green}}>✓</div>}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:13}}>
+              <div style={{width:32,height:32,flexShrink:0,clipPath:'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)',background:ac?C.gold:'#E4D9C4',color:ac?'white':C.bm,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700}}>{ay.numberInSurah}</div>
+              <div style={{flex:1}}/>
+              <Btn onClick={e=>{e.stopPropagation();openTafsir(idx);}} style={{border:`1px solid ${C.border}`,borderRadius:6,color:C.bm,padding:'4px 10px',fontSize:11,fontWeight:500}}>📚 Tafsir</Btn>
+              <Btn onClick={e=>{e.stopPropagation();toggleBk(sn,idx);}} style={{fontSize:16,opacity:bkd?1:.25,color:C.gold}}>🔖</Btn>
+              <Btn onClick={e=>{e.stopPropagation();playAt(idx);}} style={{width:30,height:30,borderRadius:'50%',background:ac&&playing?C.gold:C.gf,color:ac&&playing?'white':C.gold,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,animation:ac&&playing?'pulse 1.5s infinite':'none'}}>{ac&&playing?'⏸':'▶'}</Btn>
+            </div>
+            {renderAra(idx,fs,{marginBottom:!ao&&showFr&&fr?13:0})}
+            {!ao&&showFr&&fr&&<div style={{fontSize:14,color:C.bm,lineHeight:1.82,borderTop:`1px solid ${C.border}`,paddingTop:10,fontStyle:'italic'}}>{fr.text}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',height:'100vh',background:C.bg,fontFamily:UI,overflow:'hidden',position:'relative'}}>
+      <audio ref={aref} onTimeUpdate={()=>{const e=aref.current;if(e?.duration>0)setProg(e.currentTime/e.duration);}}/>
+
+      {toast&&<div style={{position:'absolute',bottom:150,left:'50%',transform:'translateX(-50%)',background:C.brown,color:'#FDF8EE',borderRadius:20,padding:'7px 18px',fontSize:13,zIndex:900,whiteSpace:'nowrap',animation:'fadeUp .3s'}}>{toast}</div>}
+
+      {/* Sidebar */}
+      {sbo&&<div onClick={()=>setSBO(false)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.28)',zIndex:50}}/>}
+      <div style={{position:'absolute',top:0,left:0,height:'100%',width:285,background:C.side,borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',zIndex:60,transform:sbo?'translateX(0)':'translateX(-100%)',transition:'transform .26s ease',boxShadow:sbo?'4px 0 24px rgba(0,0,0,.1)':'none'}}>
+        <div style={{padding:'14px 13px 10px',borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:C.brown,marginBottom:10}}>Liste des sourates</div>
+          <div style={{display:'flex',background:'#E0D8C5',borderRadius:8,padding:3,marginBottom:8}}>
+            <button onClick={()=>setSbm('s')} style={{flex:1,padding:6,border:'none',borderRadius:6,background:sbm==='s'?C.gold:'transparent',color:sbm==='s'?'white':C.bm,fontSize:11,fontWeight:600,cursor:'pointer'}}>Sourates</button>
+            <button onClick={()=>setSbm('j')} style={{flex:1,padding:6,border:'none',borderRadius:6,background:sbm==='j'?C.gold:'transparent',color:sbm==='j'?'white':C.bm,fontSize:11,cursor:'pointer'}}>Juz</button>
+          </div>
+          {sbm==='s'&&<input placeholder="Rechercher…" value={sbq} onChange={e=>setSbq(e.target.value)} style={{width:'100%',padding:'8px 11px',background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,color:C.brown,fontSize:12,outline:'none'}}/>}
+        </div>
+        <div style={{display:'flex',padding:'6px 14px',background:'#EDE6D5',borderBottom:`1px solid ${C.bstr}`,flexShrink:0}}>
+          <div style={{width:36,fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase',textAlign:'center'}}>N°</div>
+          <div style={{flex:1,padding:'0 10px',fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase'}}>Sourate</div>
+          <div style={{minWidth:65,fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase',textAlign:'center'}}>Arabe</div>
+        </div>
+        <div style={{flex:1,overflowY:'auto'}}>{SD.filter(s=>!sbq||s[1].toLowerCase().includes(sbq.toLowerCase())||String(s[0]).startsWith(sbq)).map(s=><SurahRow key={s[0]} s={s} active={s[0]===sn} onClick={()=>navTo(s[0])}/>)}</div>
+      </div>
+
+      {/* Settings */}
+      {sett&&<div onClick={()=>setSett(false)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.18)',zIndex:59}}/>}
+      <div style={{position:'absolute',top:0,right:0,height:'100%',width:290,background:C.bg2,borderLeft:`1px solid ${C.border}`,zIndex:60,transform:sett?'translateX(0)':'translateX(100%)',transition:'transform .26s ease',display:'flex',flexDirection:'column'}}>
+        <div style={{padding:'15px 14px',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+          <div style={{fontSize:16,fontWeight:700,color:C.brown}}>⚙️ Paramètres</div>
+          <Btn onClick={()=>setSett(false)} style={{fontSize:18,color:C.bl}}>✕</Btn>
+        </div>
+        <div style={{padding:14,overflowY:'auto',flex:1}}>
+          <div style={{fontSize:11,color:C.bl,letterSpacing:1,textTransform:'uppercase',marginBottom:8}}>Récitateur</div>
+          {RECITERS.map(([id,name])=><button key={id} onClick={()=>setRec(id)} style={{display:'block',width:'100%',padding:'9px 12px',marginBottom:6,borderRadius:9,border:`1.5px solid ${rec===id?C.gold:C.border}`,background:rec===id?C.gf:'none',textAlign:'left',fontSize:12,color:C.brown,cursor:'pointer'}}>{name}</button>)}
+          <div style={{fontSize:11,color:C.bl,letterSpacing:1,textTransform:'uppercase',marginBottom:5,marginTop:14}}>Taille texte · {fs}px</div>
+          <input type="range" min="22" max="46" value={fs} step="1" onChange={e=>setFs(+e.target.value)} style={{width:'100%',accentColor:C.gold,marginBottom:14}}/>
+          <div style={{fontSize:11,color:C.bl,letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Vitesse</div>
+          <div style={{display:'flex',gap:5,marginBottom:14}}>{[0.75,1,1.25,1.5].map(v=><button key={v} onClick={()=>{setSpd(v);if(aref.current)aref.current.playbackRate=v;}} style={{flex:1,padding:'6px 0',border:`1px solid ${spd===v?C.gold:C.border}`,borderRadius:6,background:spd===v?C.gf:'none',fontSize:11,color:spd===v?C.gold:C.bm,cursor:'pointer'}}>{v}×</button>)}</div>
+          {[['Traduction française',showFr,setShowFr],['Couleurs Tajweed',tj,setTj],['Arabe uniquement',ao,(v)=>{setAO(v);if(v)setPM(true);}],['Mode page authentique',pm,setPM],['Mode mémorisation (Hifz)',hz,setHz]].map(([l,val,set])=>(
+            <div key={l} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:`1px solid ${C.border}`}}>
+              <div style={{flex:1,fontSize:13,color:C.brown}}>{l}</div><Toggle on={val} onToggle={()=>set(!val)}/>
+            </div>
+          ))}
+          <div style={{fontSize:11,color:C.bl,letterSpacing:1,textTransform:'uppercase',margin:'14px 0 8px'}}>Légende Tajweed</div>
+          {LEGEND.map(l=><div key={l.l} style={{display:'flex',alignItems:'center',gap:8,marginBottom:7}}><span style={{width:12,height:12,borderRadius:'50%',background:l.c,display:'inline-block',flexShrink:0}}/><span style={{fontSize:11,color:C.bm}}>{l.l}</span></div>)}
+        </div>
+      </div>
+
+      {/* Surah info modal */}
+      {infos&&(
+        <div onClick={()=>setInfos(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.38)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:C.bg2,borderRadius:'20px 20px 0 0',width:'100%',animation:'slideUpM .25s ease',overflow:'hidden',maxHeight:'88%',display:'flex',flexDirection:'column'}}>
+            <div style={{height:4,background:C.gold,width:50,borderRadius:2,margin:'14px auto 0',flexShrink:0}}/>
+            <div style={{padding:'18px 20px 22px',overflowY:'auto'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}}>
+                <div><div style={{fontSize:22,fontWeight:700,color:C.brown}}>{infos[1]}</div><div style={{fontSize:14,color:C.bm,marginTop:3}}>{infos[2]}</div></div>
+                <div style={{fontFamily:ARA,fontSize:36,color:C.blue,direction:'rtl'}}>{infos[5]}</div>
+              </div>
+              <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
+                <span style={{padding:'4px 11px',borderRadius:20,fontSize:11,background:C.gf,border:`1px solid ${C.gb}`,color:C.gold,fontWeight:600}}>{infos[4]==='M'?'🕋 Mecquoise':'🕌 Médinoise'}</span>
+                <span style={{padding:'4px 11px',borderRadius:20,fontSize:11,background:C.gf,border:`1px solid ${C.border}`,color:C.bm}}>{infos[3]} versets</span>
+              </div>
+              {infos[0]!==9&&<div style={{fontFamily:ARA,fontSize:22,color:C.blue,textAlign:'center',direction:'rtl',padding:14,background:'#F8F3E8',borderRadius:10,marginBottom:14,lineHeight:2,border:`1px solid ${C.border}`}}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>}
+              <div style={{fontSize:13,color:C.bm,lineHeight:1.8,marginBottom:18}}>{SURAH_DESC[infos[0]]||`Sourate ${infos[1]} (${infos[2]}) — ${infos[4]==='M'?'Mecquoise':'Médinoise'}, ${infos[3]} versets.`}</div>
+              <button onClick={()=>{setInfos(null);navTo(infos[0]);}} style={{width:'100%',padding:14,background:C.gold,border:'none',borderRadius:12,color:'white',fontSize:15,fontWeight:600,cursor:'pointer',marginBottom:8}}>Commencer la lecture →</button>
+              <button onClick={()=>setInfos(null)} style={{width:'100%',padding:10,background:'none',border:'none',color:C.bl,fontSize:13,cursor:'pointer'}}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tafsir modal */}
+      {taf&&(
+        <div onClick={()=>setTaf(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,.38)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:C.bg2,borderRadius:'20px 20px 0 0',width:'100%',maxHeight:'80%',display:'flex',flexDirection:'column',overflow:'hidden',animation:'slideUpM .25s ease'}}>
+            <div style={{padding:'14px 16px',borderBottom:`1px solid ${C.border}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+              <div><div style={{fontSize:15,fontWeight:700,color:C.brown}}>Tafsir Ibn Kathir</div><div style={{fontSize:11,color:C.bl,marginTop:2}}>{curS?.[1]} · Verset {taf.idx+1}</div></div>
+              <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                <button onClick={()=>{const nl=tafLang==='fr'?'en':'fr';setTafLang(nl);setTaf(p=>({...p,loading:true,lang:nl,text:null}));}} style={{padding:'4px 10px',border:`1px solid ${C.border}`,borderRadius:6,background:C.gf,fontSize:11,color:C.gold,fontWeight:600,cursor:'pointer'}}>{tafLang==='fr'?'🇫🇷 Français':'🇬🇧 English'}</button>
+                <Btn onClick={()=>setTaf(null)} style={{fontSize:20,color:C.bl}}>✕</Btn>
+              </div>
+            </div>
+            {ayahs[taf.idx]&&<div dir="rtl" style={{padding:'12px 16px',fontFamily:ARA,fontSize:22,color:C.blue,textAlign:'right',lineHeight:1.9,background:'#F8F3E8',borderBottom:`1px solid ${C.border}`,flexShrink:0}}>{ayahs[taf.idx].text}</div>}
+            {frV[taf.idx]&&<div style={{padding:'10px 16px',fontSize:13,color:C.bm,fontStyle:'italic',lineHeight:1.7,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>{frV[taf.idx].text}</div>}
+            <div style={{padding:'14px 16px',overflowY:'auto',flex:1,fontSize:13.5,lineHeight:1.9,color:C.brown}}>
+              {taf.loading?<div style={{textAlign:'center',padding:24}}><div style={{width:24,height:24,border:`2px solid ${C.border}`,borderTop:`2px solid ${C.gold}`,borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 10px'}}/></div>
+              :taf.lang==='fr'?<div><div style={{background:'#FFFBEE',border:`1px solid ${C.border}`,borderRadius:8,padding:14,marginBottom:14}}><div style={{fontSize:12,fontWeight:700,color:C.brown,marginBottom:8}}>📗 Tafsir Ibn Kathir — Français</div><div style={{fontSize:12,color:C.bm,lineHeight:1.8,marginBottom:12}}>Le Tafsir complet en français est disponible sur <strong>tafsir.be</strong>.</div><a href={`https://tafsir.be/quran/${sn}/${taf.idx+1}`} target="_blank" rel="noreferrer" style={{display:'inline-block',padding:'10px 20px',background:C.blue,color:'white',borderRadius:8,fontSize:13,fontWeight:600,textDecoration:'none'}}>Lire sur tafsir.be →</a></div></div>
+              :taf.text?<div>{taf.text}</div>
+              :<div style={{textAlign:'center',padding:32,color:C.bl}}>Non disponible pour ce verset.</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {wp&&<div onClick={()=>setWp(null)} style={{position:'absolute',inset:0,zIndex:180}}><div onClick={e=>e.stopPropagation()} style={{position:'absolute',bottom:150,left:'50%',transform:'translateX(-50%)',background:C.bg2,border:`1.5px solid ${C.gold}`,borderRadius:14,padding:'16px 22px',minWidth:220,boxShadow:`0 8px 32px ${C.shadow}`,textAlign:'center',animation:'fadeUp .2s ease'}}><div style={{fontFamily:ARA,fontSize:28,color:C.blue,direction:'rtl',marginBottom:5}}>{wp.word}</div><div style={{fontSize:12,color:C.bm,fontStyle:'italic',marginBottom:12}}>Analyse disponible dans l'app complète</div><button onClick={()=>setWp(null)} style={{background:C.gold,border:'none',borderRadius:8,color:'white',padding:'6px 20px',fontSize:12,fontWeight:600,cursor:'pointer'}}>Fermer</button></div></div>}
+
+      {/* Header */}
+      <header style={{background:C.bg2,borderBottom:`1px solid ${C.border}`,padding:'10px 13px',display:'flex',alignItems:'center',gap:10,flexShrink:0,boxShadow:`0 1px 6px ${C.shadow}`}}>
+        <Btn onClick={()=>setSBO(v=>!v)} style={{border:`1px solid ${C.border}`,borderRadius:8,padding:'7px 10px',fontSize:14,color:C.bm}}>☰</Btn>
+        <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+          <AnwarLogo size={38}/>
+          <div>
+            {tab==='quran'&&ayahs.length?<><div style={{fontSize:16,fontWeight:700,color:C.brown}}>{curS?.[1]} <span style={{fontWeight:400,fontSize:13,color:C.bl}}>({curS?.[2]})</span></div><div style={{fontSize:10,color:C.bl,letterSpacing:1,textTransform:'uppercase',marginTop:1}}>{curS?.[4]==='M'?'Mecquoise 🕋':'Médinoise 🕌'} · {curS?.[3]}v</div></>
+            :<><div style={{fontSize:16,fontWeight:700,color:C.blue}}>Anwar App</div><div style={{fontSize:10,color:C.bl,letterSpacing:1.2,textTransform:'uppercase',marginTop:1}}>Al-Qurʾân · Lecture & Méditation</div></>}
+          </div>
+        </div>
+        <Btn onClick={()=>setSett(v=>!v)} style={{border:`1px solid ${C.border}`,borderRadius:8,padding:'7px 8px',fontSize:13}}>⚙️</Btn>
+      </header>
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:'auto',paddingBottom:tab==='quran'?196:136,display:'flex',flexDirection:'column'}}>
+        {tab==='home'&&(
+          <div style={{padding:'14px 14px 16px'}}>
+            <div style={{background:'linear-gradient(135deg,#2A1F0A,#1B2D5A)',borderRadius:16,padding:'16px 18px',marginBottom:12,position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',inset:0,opacity:.05,backgroundImage:'repeating-linear-gradient(60deg,#c9a84c 0,#c9a84c 1px,transparent 0,transparent 20px)',backgroundSize:'20px 20px'}}/>
+              <div style={{fontSize:21,fontWeight:700,color:'#F5EFE3',marginBottom:2}}>Anwar App</div>
+              <div style={{fontSize:10,color:'rgba(201,168,76,.8)'}}>{new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+            </div>
+            <div style={{background:C.bg2,border:`1.5px solid ${C.gb}`,borderLeft:`4px solid ${C.gold}`,borderRadius:14,padding:16,marginBottom:12}}>
+              <div style={{fontSize:10,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',fontWeight:700,marginBottom:10}}>✨ Verset du jour</div>
+              <div style={{fontFamily:ARA,fontSize:26,color:C.blue,direction:'rtl',textAlign:'right',lineHeight:2,marginBottom:10}}>{vdj.ar}</div>
+              <div style={{fontSize:14,color:C.bm,fontStyle:'italic',lineHeight:1.75,marginBottom:7}}>« {vdj.fr} »</div>
+              <div style={{fontSize:11,color:C.bl}}>{vdj.ref}</div>
+            </div>
+            <div style={{fontSize:14,fontWeight:700,color:C.brown,marginBottom:8}}>Les 114 Sourates</div>
+            <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden'}}>
+              <div style={{display:'flex',padding:'6px 14px',background:'#EDE6D5',borderBottom:`1.5px solid ${C.bstr}`}}>
+                <div style={{width:36,fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase',textAlign:'center'}}>N°</div>
+                <div style={{flex:1,padding:'0 10px',fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase'}}>Sourate · Traduction</div>
+                <div style={{minWidth:65,fontSize:9,color:C.bl,fontWeight:700,textTransform:'uppercase',textAlign:'center'}}>Arabe</div>
+              </div>
+              {SD.map(s=><SurahRow key={s[0]} s={s} active={s[0]===sn} onClick={()=>setInfos(s)}/>)}
+            </div>
+          </div>
+        )}
+
+        {tab==='quran'&&(loading?<Spinner text="Chargement de la sourate…"/>:!ayahs.length?<div style={{textAlign:'center',padding:50}}><div style={{fontSize:15,fontWeight:600,color:C.brown,marginBottom:8}}>Choisissez une sourate</div><button onClick={()=>setTab('home')} style={{padding:'12px 24px',background:C.gold,border:'none',borderRadius:10,color:'white',fontSize:14,fontWeight:600,cursor:'pointer'}}>Voir les sourates →</button></div>:(pm||ao)?renderPageMode():renderCards())}
+
+        {tab==='search'&&(
+          <div style={{padding:14}}>
+            <div style={{fontSize:13,color:C.bl,marginBottom:10}}>{allFr?'Recherche dans les 6 236 versets':'Chargement en arrière-plan…'}</div>
+            <div style={{display:'flex',gap:8,marginBottom:14}}>
+              <input value={sq} onChange={e=>setSq(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doSearch()} placeholder="Ex: miséricordieux, paradis…" style={{flex:1,padding:'11px 13px',background:C.bg2,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.brown,fontSize:13,outline:'none'}}/>
+              <button onClick={doSearch} style={{padding:'11px 18px',background:C.gold,border:'none',borderRadius:10,color:'white',fontSize:14,fontWeight:700,cursor:'pointer'}}>→</button>
+            </div>
+            {sr!==null&&(<><div style={{fontSize:12,color:C.bl,marginBottom:10}}>{sr.length} résultat(s){allFr?' dans tout le Coran':''}</div>
+            {sr.length===0?<div style={{textAlign:'center',padding:24,color:C.bl}}>Aucun résultat</div>
+            :sr.map(v=>{const s=SD.find(x=>x[0]===v.surah);return(<div key={`${v.surah}:${v.numberInSurah}`} onClick={()=>{navTo(v.surah);setTimeout(()=>playAt(v.numberInSurah-1),600);}} style={{padding:'11px 13px',marginBottom:7,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,cursor:'pointer'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><div style={{fontSize:11,color:C.gold,fontWeight:700}}>{s?.[1]||''} — V.{v.numberInSurah}</div><div style={{fontFamily:ARA,fontSize:14,color:C.blue,direction:'rtl'}}>{s?.[5]||''}</div></div>
+              <div style={{fontSize:13,color:C.bm,lineHeight:1.75,fontStyle:'italic'}} dangerouslySetInnerHTML={{__html:v.text.replace(new RegExp(sq,'gi'),m=>`<mark style="background:#FFF3C4;color:${C.gold};">${m}</mark>`)}}/>
+            </div>);})}</>)}
+          </div>
+        )}
+
+        {tab==='dhikr'&&<DhikrTab dc={dc} setDc={setDc}/>}
+
+        {tab==='bk'&&(
+          <div style={{padding:12}}>
+            {!bk.length?<div style={{textAlign:'center',padding:72}}><div style={{fontSize:50,marginBottom:14}}>🔖</div><div style={{fontSize:18,color:C.brown,fontWeight:700,marginBottom:8}}>Aucun signet</div><div style={{fontSize:14,color:C.bl}}>Appuyez sur 🔖 dans un verset</div></div>
+            :bk.map(b=>(<div key={b.key} onClick={()=>navTo(b.sn)} style={{padding:14,marginBottom:9,background:C.bg2,border:`1.5px solid ${C.border}`,borderLeft:`4px solid ${C.gold}`,borderRadius:12,cursor:'pointer'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}><div><div style={{fontSize:13,fontWeight:700,color:C.gold}}>{b.en} — Verset {b.vi+1}</div><div style={{fontSize:11,color:C.bl,marginTop:2}}>{b.fr}</div></div>
+              <button onClick={e=>{e.stopPropagation();setBk(p=>p.filter(x=>x.key!==b.key));}} style={{border:'1px solid #FECACA',borderRadius:6,color:'#DC2626',padding:'3px 9px',fontSize:11,background:'none',cursor:'pointer'}}>Retirer</button></div>
+              <div style={{fontSize:13,color:C.bl,fontStyle:'italic',lineHeight:1.65}}>{b.frPrev}…</div>
+            </div>))}
+          </div>
+        )}
+      </div>
+
+      {/* Audio player */}
+      {tab==='quran'&&ayahs.length>0&&(
+        <div style={{background:C.bg2,borderTop:`1.5px solid ${C.border}`,flexShrink:0,boxShadow:`0 -2px 16px ${C.shadow}`}}>
+          <div style={{height:3,background:C.border,cursor:'pointer'}} onClick={e=>{const r=e.currentTarget.getBoundingClientRect();const p=(e.clientX-r.left)/r.width;if(aref.current?.duration)aref.current.currentTime=p*aref.current.duration;}}>
+            <div style={{height:'100%',background:C.gold,width:`${prog*100}%`,transition:'width .35s linear',borderRadius:'0 2px 2px 0'}}/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 14px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:2,height:22,flexShrink:0}}>{[5,9,4,12].map((h,i)=><div key={i} style={{width:3,height:h,borderRadius:2,background:C.gold,opacity:.4,animation:playing?`bar${i+1} .5s ease ${i*.1}s infinite`:'none'}}/>)}</div>
+            <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:700,color:C.brown,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{curS?.[1]} — {curS?.[2]}</div><div style={{fontSize:10,color:C.bl,marginTop:1}}>Verset {vi+1} sur {ayahs.length}</div></div>
+            <Btn onClick={()=>playAt(vi-1)} disabled={vi===0} style={{fontSize:20,color:C.brown}}>⏮</Btn>
+            <button onClick={togglePlay} style={{width:42,height:42,borderRadius:'50%',background:C.gold,border:'none',color:'white',fontSize:17,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:`0 2px 12px ${C.gb}`,cursor:'pointer',animation:playing?'pulse 1.5s ease infinite':'none'}}>{playing?'⏸':'▶'}</button>
+            <Btn onClick={()=>playAt(vi+1)} disabled={vi>=ayahs.length-1} style={{fontSize:20,color:C.brown}}>⏭</Btn>
+            <Btn onClick={()=>setRepeat(r=>r==='none'?'verse':r==='verse'?'surah':'none')} style={{fontSize:15,color:C.bm,opacity:repeat==='none'?.3:1}}>{repeat==='verse'?'🔂':'🔁'}</Btn>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom nav */}
+      <nav style={{display:'flex',background:C.bg2,borderTop:`1.5px solid ${C.border}`,height:136,flexShrink:0,boxShadow:`0 -2px 12px ${C.shadow}`}}>
+        {[['home','🏠','Accueil'],['quran','📖','Lire'],['search','🔍','Chercher'],['dhikr','📿','Dhikr'],['bk','🔖','Signets']].map(([id,icon,label])=>(
+          <button key={id} onClick={()=>setTab(id)} className={`tab-btn ${tab===id?'active':'inactive'}`}>
+            <span style={{fontSize:32,lineHeight:1}}>{icon}</span>
+            <span style={{fontSize:13,fontWeight:600}}>{label}{id==='bk'&&bk.length>0?` (${bk.length})`:''}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-// Splash
-requestAnimationFrame(()=>{const f=document.getElementById('spf');if(f)f.style.width='100%';});
-setTimeout(()=>{
-  const s=document.getElementById('splash');if(s){s.classList.add('out');setTimeout(()=>s.remove(),600);}
-  initOB();
-  updBadge();
-  render();
-  navTo(1);
-},2100);
-
-// Service Worker
-if('serviceWorker'in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  });
+const container = document.getElementById('root');
+const reactRoot = ReactDOM.createRoot(container);
+reactRoot.render(React.createElement(AnwarApp));
+requestAnimationFrame(() => { const f=document.getElementById('spf'); if(f)f.style.width='100%'; });
+setTimeout(() => { const l=document.getElementById('loader'); if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);} }, 2200);
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
-
-// PWA install banner
-let dip=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;});
-window.__installApp=async()=>{if(!dip)return;dip.prompt();const{outcome}=await dip.userChoice;dip=null;if(outcome==='accepted')toast('✅ Application installée !');};
 </script>
 </body>
 </html>
