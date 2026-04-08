@@ -7,14 +7,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Anwar App"/>
-<meta name="description" content="Anwar App — Éclaire ton quotidien · Coran Tajweed FR"/>
+<meta name="description" content="Anwar App — Éclaire ton quotidien"/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
 <title>Anwar App</title>
 <style>
 html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
 #root{height:100%;}
-#loader{position:fixed;inset:0;background:#F5EFE3;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;font-family:-apple-system,sans-serif;}
+#loader{position:fixed;inset:0;background:#F5EFE3;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;
+  font-family:-apple-system,sans-serif;}
 #loader.out{opacity:0;pointer-events:none;}
 </style>
 </head>
@@ -23,20 +25,26 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#F5EFE3;}
   <svg width="118" height="118" viewBox="0 0 120 120" style="margin-bottom:18px">
     <circle cx="60" cy="60" r="56" fill="white" stroke="#1B2D5A" stroke-width="3"/>
     <circle cx="60" cy="60" r="50" fill="none" stroke="#1B2D5A" stroke-width=".8" opacity=".35"/>
-    <text x="60" y="56" font-family="serif" font-size="34" fill="#1B2D5A" text-anchor="middle" dominant-baseline="middle">&#x623;&#x646;&#x648;&#x631;</text>
-    <text x="60" y="82" font-family="sans-serif" font-size="11" fill="#1B2D5A" text-anchor="middle" letter-spacing="2">ANWAR</text>
-    <text x="60" y="96" font-family="sans-serif" font-size="9" fill="#9B7A50" text-anchor="middle">App</text>
+    <text x="60" y="56" font-family="serif" font-size="34" fill="#1B2D5A"
+      text-anchor="middle" dominant-baseline="middle">&#x623;&#x646;&#x648;&#x631;</text>
+    <text x="60" y="82" font-family="sans-serif" font-size="11" fill="#1B2D5A"
+      text-anchor="middle" letter-spacing="2">ANWAR</text>
+    <text x="60" y="96" font-family="sans-serif" font-size="9" fill="#9B7A50"
+      text-anchor="middle">App</text>
   </svg>
   <div style="font-size:12px;color:#3A2008;font-weight:600;margin-bottom:3px">Anwar App</div>
-  <div style="font-size:10px;color:#9B7A50;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:26px">Éclaire ton quotidien</div>
+  <div style="font-size:10px;color:#9B7A50;letter-spacing:1.5px;text-transform:uppercase;
+    margin-bottom:26px">Éclaire ton quotidien</div>
   <div style="width:90px;height:2px;background:#DDD1BB;border-radius:1px;overflow:hidden">
     <div id="spf" style="height:100%;background:#8A6910;width:0;transition:width 2s ease"></div>
   </div>
 </div>
 <div id="root"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
@@ -46,11 +54,11 @@ const C = {
   blue:"#1B2D5A", brown:"#3A2008", bm:"#6B4A25", bl:"#9B7A50",
   border:"#DDD1BB", bstr:"#C4B49A", shadow:"rgba(58,32,8,.09)", green:"#15803D",
 };
-const ARA = "'Scheherazade New', serif";
+const ARA = "'Amiri Quran', 'Scheherazade New', serif";
 const UI  = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 const GCSS = `
-@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:rgba(138,105,16,.22);border-radius:2px}
@@ -94,36 +102,44 @@ const GCSS = `
 
 /* ── AL-MA'THURÂT SUGHRA ── */
 
-// ── TAJWEED : couleurs inline garanties (pas de dépendance CSS) ──
+// ── TAJWEED : couleurs inline (styles appliqués directement) ──
 const TC={
-  ham_wasl:'#AAAAAA',slnt:'#AAAAAA',laam_shamsiyya:'#AAAAAA',
-  madda_normal:'#3B82F6',madda_permissible:'#2563EB',
-  madda_obligatory:'#1D4ED8',madda_necessary:'#1E3A8A',
-  qalaqah:'#D97706',ghunnah:'#DC2626',
-  ikhafa:'#7C3AED',ikhafa_shafawi:'#9D174D',iqlab:'#0E7490',
-  idghaam_w_ghunnah:'#16A34A',idghaam_wo_ghunnah:'#15803D',idghaam_shafawi:'#047857',
+  ham_wasl:'#AAAAAA', slnt:'#AAAAAA', laam_shamsiyya:'#AAAAAA',
+  madda_normal:'#007AFF', madda_permissible:'#007AFF',
+  madda_obligatory:'#0040CC', madda_necessary:'#0040CC',
+  qalaqah:'#FF8C00',
+  ghunnah:'#FF2D8B', ikhafa:'#FF2D8B', ikhafa_shafawi:'#FF2D8B',
+  iqlab:'#00AACC',
+  idghaam_w_ghunnah:'#00AA44', idghaam_wo_ghunnah:'#00AA44', idghaam_shafawi:'#00AA44',
 };
 
-const parseTajweedBrackets=(raw)=>{
+const applyTajweedColors=(raw)=>{
   if(!raw)return'';
-  let out=raw;
-  if(out.includes('<span')){
-    // Ajouter style inline color à chaque span
-    out=out.replace(/<span\s+class=['"]([^'"]+)['"]/g,(_,cls)=>{
+  let s=raw;
+
+  // ── CAS 1 : l'API retourne du HTML avec des <span class="..."> ──
+  if(s.includes('<span')){
+    return s.replace(/<span\s+class=["']([^"']+)["']/g,(_,cls)=>{
       const col=TC[cls.trim()];
-      return col?`<span class="${cls}" style="color:${col}"`:`<span class="${cls}"`;
+      return col
+        ? `<span style="color:${col};font-family:'Amiri Quran','Scheherazade New',serif"`
+        : `<span style="font-family:'Amiri Quran','Scheherazade New',serif"`;
     });
-    return out;
   }
-  // Notation crochets [texte|classe:n] → span coloré inline
-  out=out.replace(/\[([^\|]*)\|([^:\]]+):[^\]]*\]/g,(_,txt,cls)=>{
-    if(!txt)return'';
-    const col=TC[cls.trim()]||'#111111';
-    return`<span style="color:${col}">${txt}</span>`;
-  });
-  // Nettoyer résidus
-  out=out.replace(/\[[^\]]*\]/g,'').replace(/\|[a-z_]+:[0-9]+/g,'');
-  return out;
+
+  // ── CAS 2 : notation crochets [texte|classe:n] ──
+  if(s.includes('[')){
+    s=s.replace(/\[([^\|]*)\|([^:\]]+):[^\]]*\]/g,(_,txt,cls)=>{
+      if(!txt)return'';
+      const col=TC[cls.trim()]||'#111111';
+      return`<span style="color:${col};font-family:'Amiri Quran','Scheherazade New',serif">${txt}</span>`;
+    });
+    s=s.replace(/\[[^\]]*\]/g,'').replace(/\|[a-z_]+:[0-9]+/g,'');
+    return s;
+  }
+
+  // ── CAS 3 : texte brut uthmani — rendu sans coloration ──
+  return s;
 };
 
 
@@ -611,21 +627,27 @@ function AnwarApp(){
     setLoading(true);setAyahs([]);setFrV([]);setTjA([]);setVi(0);setPlaying(false);setVD(new Set());setRW(new Set());
     if(aref.current)aref.current.src='';
     Promise.all([
-      // Fetch tajweed text (Arabic with coloring data)
+      // Tajweed (avec balises couleur)
       fetch(`https://api.alquran.cloud/v1/surah/${n}/quran-tajweed`).then(r=>r.json()).catch(()=>null),
-      // Fetch French translation
+      // Texte uthmani propre (fallback fiable)
+      fetch(`https://api.alquran.cloud/v1/surah/${n}/quran-uthmani`).then(r=>r.json()).catch(()=>null),
+      // Traduction française
       fetch(`https://api.alquran.cloud/v1/surah/${n}/fr.hamidullah`).then(r=>r.json()).catch(()=>null),
-    ]).then(([tjRes, frRes])=>{
-      const rawTj  = tjRes?.code===200  ? tjRes.data?.ayahs  || [] : [];
-      const rawFr  = frRes?.code===200  ? frRes.data?.ayahs  || [] : [];
-      // Build base ayahs from tajweed (strip markup for numbering/tafsir)
-      const base = rawTj.map(a=>({
+    ]).then(([tjRes,utRes,frRes])=>{
+      const rawTj = tjRes?.code===200 ? tjRes.data?.ayahs||[] : [];
+      const rawUt = utRes?.code===200 ? utRes.data?.ayahs||[] : [];
+      const rawFr = frRes?.code===200 ? frRes.data?.ayahs||[] : [];
+
+      // Base = uthmani (texte propre) avec textColored = tajweed si dispo
+      const base = (rawUt.length?rawUt:rawTj).map((a,i)=>({
         ...a,
-        textClean: a.text.replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\|/g,'').replace(/\s+/g,' ').trim()
+        textClean: a.text,   // uthmani = déjà propre
+        textColored: rawTj[i]?.text || a.text,  // tajweed pour coloration
       }));
-      setTjA(rawTj);   // keep raw tajweed text (HTML spans OR bracket notation)
+
+      setTjA(rawTj);
       setFrV(rawFr);
-      setAyahs(base);  // clean text for numbering / tafsir display
+      setAyahs(base);
       setLoading(false);
     });
     if(!allFr&&!allFrL){setAllFrL(true);fetch('https://api.alquran.cloud/v1/quran/fr.hamidullah').then(r=>r.json()).then(({code,data})=>{if(code===200&&data?.surahs){const all=[];data.surahs.forEach(s=>s.ayahs.forEach(a=>all.push({...a,surah:s.number})));setAllFr(all);}setAllFrL(false);}).catch(()=>setAllFrL(false));}
@@ -660,8 +682,8 @@ function AnwarApp(){
   const renderAra=(idx,fontSize,extra={})=>{
     const ay=ayahs[idx];if(!ay)return null;
     const tjAy=tjA[idx];const ac=idx===vi;
-    if(tj&&tjAy?.text){
-      const html=parseTajweedBrackets(tjAy.text);
+    if(tj&&ay?.textColored){
+      const html=applyTajweedColors(ay.textColored);
       if(html){
         const blurStyle=hz&&!ac?{filter:'blur(6px)',cursor:'pointer',userSelect:'none'}:{};
         return <div dir="rtl"
@@ -671,8 +693,7 @@ function AnwarApp(){
       }
     }
     // Fallback propre (si API indisponible)
-    const plainText=ay.textClean||
-      (ay.text||'').replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\s+/g,' ').trim();
+    const plainText=ay.textClean||ay.text||'';
     return(<div dir="rtl" style={{fontFamily:ARA,fontSize,lineHeight:2.35,color:'#111111',textAlign:'right',...extra}}>
       {plainText.split(' ').filter(Boolean).map((w,i)=>{
         const hidden=hz&&!ac&&!rw.has(w);
@@ -699,8 +720,8 @@ function AnwarApp(){
               {ay.numberInSurah}
             </span>
           );
-          if(tj&&tjAy?.text){
-            const h=parseTajweedBrackets(tjAy.text);
+          if(tj&&ay?.textColored){
+            const h=applyTajweedColors(ay.textColored);
             if(h)return(
               <React.Fragment key={idx}>
                 <span dangerouslySetInnerHTML={{__html:h}}/>
@@ -710,7 +731,7 @@ function AnwarApp(){
           }
           // Fallback : texte propre sans balises HTML
           const clean=ay.textClean||
-            (ay.text||'').replace(/<[^>]+>/g,'').replace(/\[[^\]]*\]/g,'').replace(/\s+/g,' ').trim();
+            ay.text||'';
           return(
             <React.Fragment key={idx}>
               <span>{clean}</span>{numBtn}{' '}
@@ -956,11 +977,16 @@ const container = document.getElementById('root');
 const reactRoot = ReactDOM.createRoot(container);
 reactRoot.render(React.createElement(AnwarApp));
 requestAnimationFrame(()=>{const f=document.getElementById('spf');if(f)f.style.width='100%';});
-setTimeout(()=>{const l=document.getElementById('loader');if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);}},2200);
+setTimeout(()=>{
+  const l=document.getElementById('loader');
+  if(l){l.classList.add('out');setTimeout(()=>l.remove(),600);}
+},2200);
 </script>
 <script>
-if('serviceWorker'in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>
+    navigator.serviceWorker.register('./sw.js').catch(()=>{})
+  );
 }
 </script>
 </body>

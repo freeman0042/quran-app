@@ -1,7 +1,7 @@
 {
   "name": "Anwar App",
   "short_name": "Anwar App",
-  "description": "Éclaire ton quotidien · Coran avec Tajweed coloré, Al-Mathurat et traduction FR",
+  "description": "Éclaire ton quotidien",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F5EFE3",
